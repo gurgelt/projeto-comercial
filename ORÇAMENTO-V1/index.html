@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Orçamento v2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- TELA INICIAL -->
+    <div id="start-screen">
+        <h1>Gerador de Orçamentos</h1>
+        <p>Crie, edite e imprima orçamentos de forma rápida e eficiente.</p>
+        <button id="show-modal-btn" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            Criar Orçamento
+        </button>
+    </div>
+
+    <!-- CONTEÚDO PRINCIPAL DO ORÇAMENTO (inicialmente oculto) -->
+    <div id="main-content" class="hidden">
+        <header class="orcamento-header">
+            <div>
+                <h1>LEFER PORTAS</h1>
+                <p>AV. INHAÍBA, 212 - VILA DA SAÚDE - SÃO PAULO/SP</p>
+            </div>
+            <div id="orcamento-actions" class="no-print">
+                <button onclick="window.print()" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                    Imprimir Orçamento
+                </button>
+            </div>
+        </header>
+
+        <section class="info-display">
+            <div class="info-display-card">
+                <h3>Dados do Cliente</h3>
+                <p><strong>Nome:</strong> <span id="cliente-nome-display"></span></p>
+                <p><strong>CNPJ/CPF:</strong> <span id="cliente-cnpj-display"></span></p>
+            </div>
+             <div class="info-display-card">
+                <h3>Dados do Orçamento</h3>
+                <p><strong>Número:</strong> <span id="orcamento-num-display"></span></p>
+                <p><strong>Data:</strong> <span id="orcamento-data-display"></span></p>
+            </div>
+        </section>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Descrição</th>
+                        <th>Comp.</th>
+                        <th>Alt.</th>
+                        <th>Qtd.</th>
+                        <th>Unid.</th>
+                        <th>Vlr. Unit.</th>
+                        <th>Desc. %</th>
+                        <th>Total</th>
+                        <th class="no-print">Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="orcamento-table-body"></tbody>
+            </table>
+        </div>
+        
+        <section class="totals-section">
+            <div class="totals-box">
+                <div class="total-row">
+                    <span>Subtotal:</span>
+                    <span id="subtotal">R$ 0,00</span>
+                </div>
+                <div class="total-row">
+                    <label for="desconto-geral">Desconto Geral (%):</label>
+                    <input type="number" id="desconto-geral" value="0" step="0.1">
+                </div>
+                <div class="total-row grand-total">
+                    <span>Valor Total:</span>
+                    <span id="total-geral">R$ 0,00</span>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- MODAL -->
+    <div id="orcamento-modal" class="modal-overlay">
+        <div class="modal-container">
+            <!-- ETAPA 1: DADOS DO CLIENTE -->
+            <div id="modal-step-1">
+                <div class="modal-header">
+                    <h2>Dados do Cliente</h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <form id="cliente-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="cliente-nome">Nome do Cliente (Obrigatório)</label>
+                            <input type="text" id="cliente-nome" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cliente-cnpj">CNPJ / CPF (Obrigatório)</label>
+                            <input type="text" id="cliente-cnpj" required>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="submit" class="btn btn-primary">Próximo &rarr;</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ETAPA 2: DADOS DOS ITENS -->
+            <div id="modal-step-2" class="hidden">
+                 <div class="modal-header">
+                    <h2>Adicionar Item ao Orçamento</h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <form id="item-form">
+                    <div class="form-grid" style="grid-template-columns: 3fr 1fr 1fr; gap: 1rem 0.5rem;">
+                         <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="item-desc">Descrição da Mercadoria</label>
+                            <input type="text" id="item-desc" required autocomplete="off">
+                            <ul id="autocomplete-list" class="hidden"></ul>
+                        </div>
+                        <div class="form-group">
+                            <label for="item-comp">Comp. (m)</label>
+                            <input type="number" id="item-comp" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="item-alt">Altura (m)</label>
+                            <input type="number" id="item-alt" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="item-qtd">Quantidade</label>
+                            <input type="number" id="item-qtd" step="0.01" required value="1">
+                        </div>
+                         <div class="form-group">
+                            <label for="item-unid">Unid.</label>
+                            <input type="text" id="item-unid" required value="un">
+                        </div>
+                        <div class="form-group">
+                            <label for="item-vlr">Vlr. Unitário</label>
+                            <input type="text" id="item-vlr" required value="0,00">
+                        </div>
+                        <div class="form-group">
+                            <label for="item-desc-perc">Desc. (%)</label>
+                            <input type="number" id="item-desc-perc" value="0" step="0.1">
+                        </div>
+                    </div>
+                     <div class="modal-actions" style="display: flex; justify-content: space-between; align-items: center;">
+                        <button type="button" id="voltar-btn" class="btn btn-secondary">&larr; Voltar</button>
+                        <div>
+                             <button type="submit" class="btn btn-primary">Adicionar Item</button>
+                             <button type="button" class="close-modal btn btn-secondary">Concluir</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+<script src="main.js"></script>
+</body>
+</html>
