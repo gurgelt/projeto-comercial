@@ -3,6 +3,9 @@
 ## 📋 Descrição
 Este projeto é um **site comercial** desenvolvido para facilitar o processo de **orçamentos e pedidos de produção** da Atron/Lefer, oferecendo controle centralizado, geração de relatórios e uma interface amigável para vendedores e gestores.
 
+<img width="1882" height="908" alt="image" src="https://github.com/user-attachments/assets/33f889f4-b7f3-4e43-9b7a-1788863ad196" />
+
+
 ---
 
 ## 🚀 Funcionalidades
