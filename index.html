@@ -1,30 +1,25 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Orçamento v3 - Lefer Portas</title>
+    <title>Gerador de Orçamento v5 - Lefer Portas</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="projeto-comercial/css/style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
 
     <div id="start-screen">
         <h1>Gerador de Orçamentos</h1>
         <p>Crie, edite e imprima orçamentos de forma rápida e eficiente.</p>
         <button id="init-orcamento-btn" class="btn btn-primary">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
+            <svg xmlns="http://www.w.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
             Criar Orçamento
         </button>
     </div>
 
-    <div id="main-content" class="hidden">
+    <main id="main-content" class="hidden">
+
         <header class="orcamento-header">
             <div>
                 <h1 id="company-name" contenteditable="true">LEFER PORTAS</h1>
@@ -33,14 +28,8 @@
             <div id="orcamento-actions" class="no-print">
                 <button id="add-item-btn" class="btn btn-secondary">Adicionar Novo Item</button>
                 <button onclick="window.print()" class="btn btn-primary">
-
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 6 2 18 2 18 9"></polyline>
-                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                        <rect x="6" y="14" width="12" height="8"></rect>
-                    </svg>
-                    Imprimir Orçamento
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                    Imprimir
                 </button>
             </div>
         </header>
@@ -49,20 +38,22 @@
             <div class="info-display-card">
                 <div class="card-header">
                     <h3>Dados do Cliente</h3>
-                    <button id="edit-cliente-btn" class="btn-icon no-print" title="Editar Cliente">Editar dados do
-                        Cliente</button>
+                    <button id="edit-cliente-btn" class="btn-icon no-print" title="Editar Cliente">
+                        <svg xmlns="http://www.w.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </button>
                 </div>
                 <p><strong>Nome:</strong> <span id="cliente-nome-display"></span></p>
                 <p><strong>CNPJ/CPF:</strong> <span id="cliente-cnpj-display"></span></p>
             </div>
-            <div class="info-display-card">
-                <div class="card-header">
+             <div class="info-display-card">
+                 <div class="card-header">
                     <h3>Dados do Orçamento</h3>
-                    <button id="edit-orcamento-btn" class="btn-icon no-print" title="Editar Orçamento">Editar dados do
-                        Orçamento</button>
-                </div>
-                <p><strong>Número:</strong> <span id="orcamento-num-display" contenteditable="true"></span></p>
-                <p><strong>Data:</strong> <span id="orcamento-data-display" contenteditable="true"></span></p>
+                    <button id="edit-orcamento-btn" class="btn-icon no-print" title="Editar Orçamento">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </button>
+                 </div>
+                <p><strong>Número:</strong> <span id="orcamento-num-display"></span></p>
+                <p><strong>Data:</strong> <span id="orcamento-data-display"></span></p>
             </div>
         </section>
 
@@ -70,27 +61,34 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Item</th>
-                        <th>Descrição da Mercadoria</th>
-                        <th>Comp.</th>
-                        <th>Alt.</th>
-                        <th>Qtd.</th>
-                        <th>Unid.</th>
-                        <th>Vlr. Unit.</th>
-                        <th>Desc. %</th>
-                        <th>Total</th>
-                        <th class="no-print">Ação</th>
+                        <th>Item</th><th>Descrição</th><th>Comp.</th><th>Alt.</th><th>Qtd.</th><th>Unid.</th><th>Vlr. Unit.</th><th>Desc. %</th><th>Total</th><th class="no-print">Ação</th>
                     </tr>
                 </thead>
                 <tbody id="orcamento-table-body"></tbody>
             </table>
         </div>
-
+        
         <section class="totals-section">
             <div class="totals-box">
                 <div class="total-row">
                     <span>Subtotal:</span>
                     <span id="subtotal">R$ 0,00</span>
+                </div>
+                <div class="total-row">
+                    <label for="frete-tipo">Frete:</label>
+                    <select id="frete-tipo" class="form-select-sm">
+                        <option value="Sem frete">Sem frete</option>
+                        <option value="Emitente">Emitente</option>
+                        <option value="Destinatário">Destinatário</option>
+                        <option value="Terceiro">Terceiro</option>
+                        <option value="Proprio por conta do remetente">Próprio por conta do remetente</option>
+                        <option value="Proprio por conta do destinatario">Próprio por conta do destinatário</option>
+                        <option value="Correio">Correio</option>
+                    </select>
+                </div>
+                <div id="frete-valor-row" class="total-row hidden">
+                    <label for="frete-valor">Valor do Frete (R$):</label>
+                    <input type="text" id="frete-valor" value="0,00">
                 </div>
                 <div class="total-row">
                     <label for="desconto-geral">Desconto Geral (%):</label>
@@ -102,103 +100,66 @@
                 </div>
             </div>
         </section>
-    </div>
+    </main>
 
     <div id="client-type-modal" class="modal-overlay">
         <div class="modal-container" style="max-width: 30rem;">
-            <div class="modal-header">
-                <h2>Selecione o Tipo de Orçamento</h2>
-                <button class="close-modal">&times;</button>
+             <div class="modal-header">
+                <h2>Selecione o Tipo de Orçamento</h2><button class="close-modal">&times;</button>
             </div>
-            <p style="text-align: center; color: var(--subtle-text); margin-bottom: 2rem;">Para quem este orçamento se
-                destina?</p>
-            <div class="modal-actions" style="display: flex; justify-content: space-around;">
-
-                <button id="tipo-serralheiro-btn" class="btn btn-secondary" data-tipo="1">Orçamento para
-                    Serralheiro</button>
-
-                <button id="tipo-cliente-final-btn" class="btn btn-primary" data-tipo="2">Orçamento para Cliente
-                    Final</button>
+            <p style="text-align: center; color: var(--subtle-text); margin-bottom: 2rem;">Para quem este orçamento se destina?</p>
+            <div class="modal-actions-init" style="">
+                <button id="tipo-serralheiro-btn" class="btn btn-secondary" data-tipo="1">Orçamento para Serralheiro</button>
+                <button id="tipo-cliente-final-btn" class="btn btn-primary" data-tipo="2">Orçamento para Cliente Final</button>
             </div>
         </div>
     </div>
-
 
     <div id="orcamento-modal" class="modal-overlay">
         <div class="modal-container">
             <div id="modal-step-1">
-                <div class="modal-header">
-                    <h2>Dados do Cliente</h2>
-                    <button class="close-modal">&times;</button>
-                </div>
+                <div class="modal-header"><h2>Dados do Cliente</h2><button class="close-modal">&times;</button></div>
                 <form id="cliente-form">
                     <div class="form-grid">
-                        <div class="form-group">
-                            <label for="cliente-nome">Nome do Cliente (Obrigatório)</label>
-                            <input type="text" id="cliente-nome" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="cliente-cnpj">CNPJ / CPF (Obrigatório)</label>
-                            <input type="text" id="cliente-cnpj" required placeholder="Digite apenas números">
-                        </div>
+                        <div class="form-group"><label for="cliente-nome">Nome do Cliente</label><input type="text" id="cliente-nome" required></div>
+                        <div class="form-group"><label for="cliente-cnpj">CNPJ / CPF</label><input type="text" id="cliente-cnpj" required placeholder="Digite apenas números"></div>
                     </div>
-                    <div class="modal-actions">
-                        <button type="submit" class="btn btn-primary">Próximo &rarr;</button>
-                    </div>
+                    <div class="modal-actions"><button type="submit" class="btn btn-primary">Próximo &rarr;</button></div>
                 </form>
             </div>
-
             <div id="modal-step-2" class="hidden">
-                <div class="modal-header">
-                    <h2>Adicionar Item ao Orçamento</h2>
-                    <button class="close-modal">&times;</button>
-                </div>
+                 <div class="modal-header"><h2>Adicionar Item ao Orçamento</h2><button class="close-modal">&times;</button></div>
                 <form id="item-form">
                     <div class="form-grid" style="grid-template-columns: 3fr 1fr 1fr; gap: 1rem 0.5rem;">
-                        <div class="form-group" style="grid-column: 1 / -1;">
-                            <label for="item-desc">Descrição da Mercadoria</label>
-                            <input type="text" id="item-desc" required autocomplete="off">
-                            <ul id="autocomplete-list" class="hidden"></ul>
-                        </div>
-                        <div class="form-group">
-                            <label for="item-comp">Comp. (m)</label>
-                            <input type="number" id="item-comp" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label for="item-alt">Altura (m)</label>
-                            <input type="number" id="item-alt" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label for="item-qtd">Quantidade</label>
-                            <input type="number" id="item-qtd" step="0.01" required value="1">
-                        </div>
-                        <div class="form-group">
-                            <label for="item-unid">Unid.</label>
-                            <input type="text" id="item-unid" required value="un">
-                        </div>
-                        <div class="form-group">
-                            <label for="item-vlr">Vlr. Unitário</label>
-                            <input type="text" id="item-vlr" required value="0,00">
-                        </div>
-                        <div class="form-group">
-                            <label for="item-desc-perc">Desc. (%)</label>
-                            <input type="number" id="item-desc-perc" value="0" step="0.1">
-                        </div>
+                         <div class="form-group" style="grid-column: 1 / -1;"><label for="item-desc">Descrição da Mercadoria</label><input type="text" id="item-desc" required autocomplete="off"><ul id="autocomplete-list" class="hidden"></ul></div>
+                        <div class="form-group"><label for="item-comp">Comp. (m)</label><input type="number" id="item-comp" step="0.01"></div>
+                        <div class="form-group"><label for="item-alt">Altura (m)</label><input type="number" id="item-alt" step="0.01"></div>
+                        <div class="form-group"><label for="item-qtd">Quantidade</label><input type="number" id="item-qtd" step="0.01" required value="1"></div>
+                        <div class="form-group"><label for="item-unid">Unid.</label><input type="text" id="item-unid" required value="un"></div>
+                        <div class="form-group"><label for="item-vlr">Vlr. Unitário</label><input type="text" id="item-vlr" required value="0,00"></div>
+                        <div class="form-group"><label for="item-desc-perc">Desc. (%)</label><input type="number" id="item-desc-perc" value="0" step="0.1"></div>
                     </div>
-                    <div class="modal-actions"
-                        style="display: flex; justify-content: space-between; align-items: center;">
+                     <div class="modal-actions" style="display: flex; justify-content: space-between; align-items: center;">
                         <button type="button" id="voltar-btn" class="btn btn-secondary">&larr; Voltar</button>
-                        <div>
-                            <button type="submit" class="btn btn-primary">Adicionar Item</button>
-                            <button type="button" class="close-modal btn btn-secondary">Concluir</button>
-                        </div>
+                        <div><button type="submit" class="btn btn-primary">Adicionar Item</button><button type="button" class="close-modal btn btn-secondary">Concluir</button></div>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <script src="projeto-comercial/js/main.js"></script>
-</body>
+    <div id="edit-orcamento-modal" class="modal-overlay">
+        <div class="modal-container" style="max-width: 30rem;">
+            <div class="modal-header"><h2>Editar Dados do Orçamento</h2><button class="close-modal">&times;</button></div>
+            <form id="edit-orcamento-form">
+                <div class="form-group" style="margin-bottom: 1rem;"><label for="orcamento-num-edit">Número do Orçamento</label><input type="text" id="orcamento-num-edit" required></div>
+                <div class="form-group"><label for="orcamento-data-edit">Data do Orçamento</label><input type="text" id="orcamento-data-edit" required></div>
+                <div class="modal-actions"><button type="submit" class="btn btn-primary">Salvar Alterações</button></div>
+            </form>
+        </div>
+    </div>
 
+    <script src="js/main.js"></script>
+
+</body>
 </html>

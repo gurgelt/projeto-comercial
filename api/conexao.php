@@ -2,7 +2,7 @@
 
 //Configurações do Banco//
 
-$servidor = "50.116.87.129";
+$servidor = "atriumdesign.com.br";
 $usuario = "atriu019_eduardo";
 $senha = "GrupoAD7788";
 $banco = "atriu019_comercial";
