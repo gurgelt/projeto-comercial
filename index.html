@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Orçamento v13 - Lefer Portas</title>
+    <title>Gerador de Orçamento v14 - Lefer Portas</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -18,48 +18,56 @@
         </button>
     </div>
 
-    <main id="main-content" class="hidden">
+    <main id="main-content" class="hidden wide-layout">
+        
         <header class="orcamento-header">
-            <div>
+            <div class="header-info">
                 <h1 id="company-name"></h1>
                 <p id="company-address"></p>
+            </div>
+            
+            <div class="header-actions">
                 <div class="empresa-selector-container no-print">
                     <label for="empresa-select">Selecionar Empresa/Filial:</label>
                     <select id="empresa-select" class="form-select-sm"></select>
                 </div>
-            </div>
-            <div id="orcamento-actions" class="no-print">
-                <button onclick="window.print()" class="btn btn-primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                    Imprimir
-                </button>
+                <div id="orcamento-actions" class="no-print">
+                    <button onclick="window.print()" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                        Imprimir
+                    </button>
+                </div>
             </div>
         </header>
 
         <section class="info-display">
-            <div class="info-display-card">
-                <div class="card-header">
-                    <h3>Dados do Cliente</h3>
-                    <button id="edit-cliente-btn" class="btn-icon no-print" title="Editar Cliente">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    </button>
+            <div class="info-column">
+                <div class="info-display-card">
+                    <div class="card-header">
+                        <h3>Dados do Cliente</h3>
+                        <button id="edit-cliente-btn" class="btn-icon no-print" title="Editar Cliente">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                    </div>
+                    <p><strong>Nome:</strong> <span id="cliente-nome-display"></span></p>
+                    <p><strong>CNPJ/CPF:</strong> <span id="cliente-cnpj-display"></span></p>
+                    <p><strong>Endereço:</strong> <span id="cliente-endereco-display"></span></p>
+                    <p><strong>Cidade/UF:</strong> <span id="cliente-cidade-uf-display"></span></p>
+                    <p><strong>Contato:</strong> <span id="cliente-contato-display"></span></p>
+                    <p><strong>E-mail:</strong> <span id="cliente-email-display"></span></p>
                 </div>
-                <p><strong>Nome:</strong> <span id="cliente-nome-display"></span></p>
-                <p><strong>CNPJ/CPF:</strong> <span id="cliente-cnpj-display"></span></p>
-                <p><strong>Endereço:</strong> <span id="cliente-endereco-display"></span></p>
-                <p><strong>Cidade/UF:</strong> <span id="cliente-cidade-uf-display"></span></p>
-                <p><strong>Contato:</strong> <span id="cliente-contato-display"></span></p>
-                <p><strong>E-mail:</strong> <span id="cliente-email-display"></span></p>
             </div>
-             <div class="info-display-card">
-                 <div class="card-header">
-                    <h3>Dados do Orçamento</h3>
-                    <button id="edit-orcamento-btn" class="btn-icon no-print" title="Editar Orçamento">
-                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    </button>
-                 </div>
-                <p><strong>Número:</strong> <span id="orcamento-num-display"></span></p>
-                <p><strong>Data:</strong> <span id="orcamento-data-display"></span></p>
+             <div class="info-column">
+                 <div class="info-display-card">
+                     <div class="card-header">
+                        <h3>Dados do Orçamento</h3>
+                        <button id="edit-orcamento-btn" class="btn-icon no-print" title="Editar Orçamento">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                     </div>
+                    <p><strong>Número:</strong> <span id="orcamento-num-display"></span></p>
+                    <p><strong>Data:</strong> <span id="orcamento-data-display"></span></p>
+                </div>
             </div>
         </section>
 
@@ -67,7 +75,16 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Item</th><th>Descrição</th><th>Comp.</th><th>Alt.</th><th>Qtd.</th><th>Unid.</th><th>Vlr. Unit.</th><th>Desc. %</th><th>Total</th><th class="no-print">Ação</th>
+                        <th class="col-item">Item</th>
+                        <th class="col-desc">Descrição</th>
+                        <th class="col-comp">Comp.</th>
+                        <th class="col-alt">Alt.</th>
+                        <th class="col-qtd">Qtd.</th>
+                        <th class="col-unid">Unid.</th>
+                        <th class="col-vlr">Vlr. Unit.</th>
+                        <th class="col-descPerc">Desc. %</th>
+                        <th class="col-total">Total</th>
+                        <th class="col-acao no-print">Ação</th>
                     </tr>
                 </thead>
                 <tbody id="orcamento-table-body"></tbody>
@@ -75,18 +92,28 @@
         </div>
         
         <div class="add-item-container no-print">
+            <button id="add-inline-row-btn" class="btn btn-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14m-7-7h14"/></svg>
+                + Novo Item (Linha)
+            </button>
             <button id="add-item-btn" class="btn btn-primary">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14m-7-7h14"/></svg>
-                Adicionar Item
+                Adicionar via Modal
             </button>
         </div>
 
         <section class="totals-section">
             <div class="totals-box">
-                <div class="total-row"><span>Subtotal:</span><span id="subtotal">R$ 0,00</span></div>
+                
                 <div class="total-row">
-                    <label for="frete-tipo">Frete:</label>
-                    <select id="frete-tipo" class="form-select-sm">
+                    <span>Subtotal:</span>
+                    <span class="print-only" id="print-subtotal">R$ 0,00</span>
+                    <span class="screen-only" id="subtotal">R$ 0,00</span>
+                </div>
+                
+                <div class="total-row">
+                    <label for="frete-tipo" class="no-print">Frete:</label>
+                    <select id="frete-tipo" class="form-select-sm no-print">
                         <option value="Sem frete">Sem frete</option>
                         <option value="Emitente">Emitente</option>
                         <option value="Destinatário">Destinatário</option>
@@ -95,10 +122,28 @@
                         <option value="Proprio por conta do destinatario">Próprio por conta do destinatário</option>
                         <option value="Correio">Correio</option>
                     </select>
+                    <span class="print-only">Frete (<span id="print-frete-tipo">Sem frete</span>):</span>
+                    <span class="print-only" id="print-frete-valor">R$ 0,00</span>
                 </div>
-                <div id="frete-valor-row" class="total-row hidden"><label for="frete-valor">Valor do Frete (R$):</label><input type="text" id="frete-valor" value="0,00"></div>
-                <div class="total-row"><label for="desconto-geral">Desconto Geral (%):</label><input type="number" id="desconto-geral" value="0" step="0.1"></div>
-                <div class="total-row grand-total"><span>Valor Total:</span><span id="total-geral">R$ 0,00</span></div>
+                
+                <div id="frete-valor-row" class="total-row hidden no-print">
+                    <label for="frete-valor">Valor do Frete (R$):</label>
+                    <input type="text" id="frete-valor" value="0,00">
+                </div>
+                
+                <div class="total-row">
+                    <label for="desconto-geral" class="no-print">Desconto Geral (%):</label>
+                    <input type="number" id="desconto-geral" value="0" step="0.1" class="no-print">
+                    <span class="print-only">Desconto Geral:</span>
+                    <span class="print-only" id="print-desconto">0.00%</span>
+                </div>
+                
+                <div class="total-row grand-total">
+                    <span>Valor Total:</span>
+                    <span class="print-only" id="print-total-geral">R$ 0,00</span>
+                    <span class="screen-only" id="total-geral">R$ 0,00</span>
+                </div>
+
             </div>
         </section>
     </main>
@@ -141,9 +186,6 @@
                     <legend>Filtro de Kits</legend>
                     <div class="kit-pronto-controls">
                         <select id="kit-select" class="form-select"></select> 
-                        <button type = "button" id="btn-adicionar-kit" class="btn btn-secondary" style="margin-left: 10px;">
-                            Adicionar Kit
-                        </button>
                     </div>
                 </fieldset>
 
@@ -155,7 +197,7 @@
                         <div class="form-group" style="grid-column: 1 / -1;">
                             <label for="item-desc">Descrição da Mercadoria</label>
                             <input type="text" id="item-desc" required autocomplete="off">
-                            <ul id="autocomplete-list" class="hidden"></ul>
+                            <ul id="autocomplete-list" class="autocomplete-list hidden"></ul>
                         </div>
                         <div class="form-group" style="grid-column: 1 / -1;">
                             <div class="checkbox-container">
@@ -176,7 +218,6 @@
                     </div>
                 </form>
             </div>
-        
         </div>
     </div>
     <div id="edit-orcamento-modal" class="modal-overlay">
