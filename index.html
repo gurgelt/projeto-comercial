@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Orçamento v11 - Lefer Portas</title>
+    <title>Gerador de Orçamento v13 - Lefer Portas</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -23,7 +23,6 @@
             <div>
                 <h1 id="company-name"></h1>
                 <p id="company-address"></p>
-
                 <div class="empresa-selector-container no-print">
                     <label for="empresa-select">Selecionar Empresa/Filial:</label>
                     <select id="empresa-select" class="form-select-sm"></select>
@@ -47,6 +46,10 @@
                 </div>
                 <p><strong>Nome:</strong> <span id="cliente-nome-display"></span></p>
                 <p><strong>CNPJ/CPF:</strong> <span id="cliente-cnpj-display"></span></p>
+                <p><strong>Endereço:</strong> <span id="cliente-endereco-display"></span></p>
+                <p><strong>Cidade/UF:</strong> <span id="cliente-cidade-uf-display"></span></p>
+                <p><strong>Contato:</strong> <span id="cliente-contato-display"></span></p>
+                <p><strong>E-mail:</strong> <span id="cliente-email-display"></span></p>
             </div>
              <div class="info-display-card">
                  <div class="card-header">
@@ -116,19 +119,41 @@
             <div id="modal-step-1">
                 <div class="modal-header"><h2>Dados do Cliente</h2><button class="close-modal">&times;</button></div>
                 <form id="cliente-form">
-                    <div class="form-grid">
-                        <div class="form-group"><label for="cliente-nome">Nome do Cliente</label><input type="text" id="cliente-nome" required></div>
-                        <div class="form-group"><label for="cliente-cnpj">CNPJ / CPF</label><input type="text" id="cliente-cnpj" required placeholder="Digite apenas números"></div>
+                    <div class="form-grid form-grid-multi-col">
+                        <div class="form-group grid-col-span-2"><label for="cliente-nome">Nome do Cliente</label><input type="text" id="cliente-nome" required></div>
+                        <div class="form-group grid-col-span-2"><label for="cliente-cnpj">CNPJ / CPF</label><input type="text" id="cliente-cnpj" required></div>
+                        <div class="form-group grid-col-span-3"><label for="cliente-endereco">Endereço</label><input type="text" id="cliente-endereco"></div>
+                        <div class="form-group grid-col-span-1"><label for="cliente-numero">Nº</label><input type="text" id="cliente-numero"></div>
+                        <div class="form-group grid-col-span-2"><label for="cliente-bairro">Bairro</label><input type="text" id="cliente-bairro"></div>
+                        <div class="form-group grid-col-span-2"><label for="cliente-cidade">Cidade</label><input type="text" id="cliente-cidade"></div>
+                        <div class="form-group grid-col-span-1"><label for="cliente-estado">Estado</label><input type="text" id="cliente-estado" maxlength="2"></div>
+                        <div class="form-group grid-col-span-1"><label for="cliente-cep">CEP</label><input type="text" id="cliente-cep"></div>
+                        <div class="form-group grid-col-span-2"><label for="cliente-contato">Contato (Telefone)</label><input type="text" id="cliente-contato"></div>
+                        <div class="form-group grid-col-span-2"><label for="cliente-email">E-mail</label><input type="email" id="cliente-email"></div>
                     </div>
                     <div class="modal-actions"><button type="submit" class="btn btn-primary">Próximo &rarr;</button></div>
                 </form>
             </div>
             <div id="modal-step-2" class="hidden">
                 <div class="modal-header"><h2>Adicionar Item ao Orçamento</h2><button class="close-modal">&times;</button></div>
+                
+                <fieldset class="kit-pronto-section">
+                    <legend>Filtro de Kits</legend>
+                    <div class="kit-pronto-controls">
+                        <select id="kit-select" class="form-select"></select> 
+                        <button type = "button" id="btn-adicionar-kit" class="btn btn-secondary" style="margin-left: 10px;">
+                            Adicionar Kit
+                        </button>
+                    </div>
+                </fieldset>
+
+                <hr class="separator">
+                
                 <form id="item-form">
+                    <p class="form-title">Adicionar Item</p>
                     <div class="form-grid" style="grid-template-columns: repeat(6, 1fr); gap: 1rem 0.5rem;">
                         <div class="form-group" style="grid-column: 1 / -1;">
-                            <label for="item-desc">Descrição da Mercadoria (ou tipo de lâmina para cálculo)</label>
+                            <label for="item-desc">Descrição da Mercadoria</label>
                             <input type="text" id="item-desc" required autocomplete="off">
                             <ul id="autocomplete-list" class="hidden"></ul>
                         </div>
@@ -151,6 +176,7 @@
                     </div>
                 </form>
             </div>
+        
         </div>
     </div>
     <div id="edit-orcamento-modal" class="modal-overlay">

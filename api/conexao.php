@@ -19,7 +19,7 @@ if($conexao->connect_error){
 
 //Definindo o padrão UTF8//
 
-    $conexao->set_charset("utf8");
+    $conexao->set_charset("utf8mb4");
 
 
 ?>
