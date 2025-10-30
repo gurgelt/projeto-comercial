@@ -39,7 +39,7 @@ body {
     margin-bottom: 1rem;
 }
 
-/* NOVO LAYOUT "WIDE" */
+/* LAYOUT "WIDE" */
 main.wide-layout {
     max-width: 1600px;
     width: 95%;
@@ -86,7 +86,6 @@ main.wide-layout {
 /* =================================================================
    4. SEÇÃO DE INFORMAÇÕES (CLIENTE / ORÇAMENTO)
    ================================================================= */
-/* NOVO LAYOUT EM COLUNAS */
 .info-display {
     display: flex;
     justify-content: space-between;
@@ -126,10 +125,8 @@ main.wide-layout {
 .table-wrapper {
     width: 100%;
     margin-bottom: 1.5rem;
-    overflow-x: auto;
-    
-    /* CORREÇÃO DE VISIBILIDADE DO AUTOCOMPLETE */
-    overflow: visible; 
+    overflow-x: auto; /* Permite scroll horizontal se necessário */
+    overflow: visible; /* Garante que dropdowns não sejam cortados */
 }
 
 table {
@@ -147,9 +144,12 @@ th, td {
 thead th {
     background-color: var(--light-bg);
     font-weight: 600;
+    position: sticky; /* Mantém cabeçalho visível */
+    top: 0;
+    z-index: 10;
 }
 
-/* Larguras das colunas (estilo Excel) */
+/* Larguras das colunas */
 .col-item { width: 5%; }
 .col-desc { width: 35%; }
 .col-comp, .col-alt, .col-qtd, .col-unid, .col-descPerc { width: 7%; }
@@ -180,7 +180,7 @@ tbody tr:hover {
     background-color: transparent;
     font: inherit;
     color: inherit;
-    box-sizing: border-box; 
+    box-sizing: border-box;
     height: 100%;
 }
 .inline-input:focus,
@@ -189,8 +189,8 @@ tbody tr:hover {
     background-color: #fff;
     outline: none;
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-    position: relative;
-    z-index: 10;
+    position: relative; /* Garante que fique acima de outros elementos */
+    z-index: 11; /* Acima do thead sticky */
 }
 
 /* Alinhamentos */
@@ -207,7 +207,7 @@ tbody tr:hover {
 
 /* Wrapper do Autocomplete Inline */
 .inline-autocomplete-wrapper {
-    position: relative;
+    position: relative; /* Necessário para o z-index e posicionamento da lista */
     width: 100%;
     height: 100%;
     display: flex;
@@ -216,9 +216,9 @@ tbody tr:hover {
     flex-grow: 1;
 }
 
-/* CORREÇÃO DE VISIBILIDADE: z-index maior quando focado */
+/* Garante que o dropdown fique acima das linhas abaixo */
 .inline-autocomplete-wrapper:focus-within {
-    z-index: 101;
+    z-index: 101; /* Maior que outros elementos da tabela */
 }
 
 .autocomplete-list {
@@ -226,7 +226,7 @@ tbody tr:hover {
     top: 100%;
     left: 0;
     width: 350px; /* Largura maior */
-    z-index: 100;
+    z-index: 100; /* Abaixo do :focus-within, mas acima do resto */
     background: #fff;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -267,7 +267,6 @@ tbody tr:hover {
 }
 
 .totals-box {
-    /* Alinha à direita (estilo Excel) */
     width: 100%;
     max-width: 450px;
     margin-left: auto;
@@ -339,6 +338,8 @@ tbody tr:hover {
     text-decoration: none;
     transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
+
+
 .btn-primary {
     background-color: var(--primary-color);
     color: #fff;
@@ -472,7 +473,40 @@ tbody tr:hover {
 .modal-actions {
     margin-top: 1.5rem;
     text-align: right;
+    display: flex; /* Para alinhar botões */
+    justify-content: space-between; /* Para separar Voltar dos outros */
+    align-items: center;
 }
+.modal-actions div { /* Agrupa os botões da direita */
+    display: flex;
+    gap: 0.5rem;
+}
+/* CORREÇÃO: Estilos dos botões do modal */
+.modal-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+}
+.modal-actions .btn-primary {
+     background-color: var(--primary-color);
+     color: #fff;
+}
+.modal-actions .btn-primary:hover {
+     background-color: var(--primary-hover);
+}
+.modal-actions .btn-secondary {
+     background-color: var(--secondary-color);
+     color: #fff;
+}
+ .modal-actions .btn-secondary:hover {
+     background-color: var(--secondary-hover);
+}
+
 .modal-actions-init {
     display: flex;
     justify-content: center;
@@ -484,6 +518,7 @@ tbody tr:hover {
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 1rem 1.5rem;
+    margin-bottom: 1rem; /* Adiciona espaço antes da hr */
 }
 .kit-pronto-section legend {
     font-weight: 600;
@@ -503,26 +538,346 @@ hr.separator {
     border-top: 1px solid var(--border-color);
     margin: 1.5rem 0;
 }
-#autocomplete-list {
-    position: relative; /* Já está dentro de um form-group, não precisa ser absoluto */
-    z-index: 1001; /* Maior que o modal */
-    border: 1px solid #ccc;
-    border-top: none;
-    border-radius: 0 0 5px 5px;
-    max-height: 150px;
-    overflow-y: auto;
+
+/* --- Autocomplete do MODAL --- */
+#modal-step-2 .form-group[style*="grid-column: 1 / -1"] {
+    position: relative; /* Torna o form-group da descrição a âncora */
 }
-#autocomplete-list li {
-    padding: 0.6rem;
+#modal-step-2 #autocomplete-list {
+    position: absolute;
+    top: 100%; /* Abaixo do input */
+    left: 0;
+    right: 0; /* Ocupa a largura do .form-group */
+    z-index: 1001; /* Acima de outros elementos do modal */
+    
     background: #fff;
-    cursor: pointer;
+    border: 1px solid #ccc;
+    border-top: none; /* Evita borda dupla com o input */
+    border-radius: 0 0 5px 5px;
+    max-height: 180px; /* Altura máxima controlada */
+    overflow-y: auto; /* Adiciona scroll se necessário */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Sombra para destacar */
+    
+    margin-top: -1px; /* Pequeno ajuste para colar no input */
 }
-#autocomplete-list li:hover {
+#modal-step-2 #autocomplete-list li {
+    padding: 0.6rem 0.8rem; /* Aumenta um pouco o padding interno */
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0; /* Linha separadora sutil */
+}
+#modal-step-2 #autocomplete-list li:last-child {
+    border-bottom: none;
+}
+#modal-step-2 #autocomplete-list li:hover {
     background: #f0f0f0;
 }
 
 /* =================================================================
-   9. ESTILOS DE IMPRESSÃO (PRINT)
+   9. MELHORIAS (CAMPOS DESABILITADOS)
+   ================================================================= */
+.form-group input:disabled,
+.inline-input:disabled {
+    background-color: #e9ecef !important; /* Cor de "desabilitado", !important para sobrescrever hover */
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.checkbox-container input[type="checkbox"]:disabled + label {
+    color: var(--subtle-text);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+
+/* ======================================================================= */
+/*                 ESTILOS PARA A VISUALIZAÇÃO DE PRODUÇÃO            */
+/* ======================================================================= */
+
+#producao-view {
+    /* Herda a maioria dos estilos de .wide-layout */
+    border: 1px solid #ccc; /* Adiciona uma borda sutil à seção inteira */
+}
+
+/* --- Cabeçalho da Produção --- */
+.producao-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background-color: #343a40; /* Fundo escuro como no Excel */
+    color: #fff;
+    border-bottom: 5px solid #dc3545; /* Linha vermelha grossa */
+}
+.producao-logo span { /* Estilo simples para o texto LEFER */
+    border-color: #fff !important;
+    color: #fff;
+}
+.producao-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    text-align: center;
+    flex-grow: 1; /* Faz o título ocupar o espaço central */
+}
+.producao-logo,
+.producao-header-spacer {
+    flex-basis: 150px; /* Define uma largura base para logo/spacer para ajudar no alinhamento */
+    flex-shrink: 0;
+}
+.producao-header-spacer { visibility: hidden; } /* Apenas para espaçamento */
+
+/* --- Grid de Informações Gerais --- */
+.producao-info-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr; /* Colunas: Pedido | Vendedor | Referencia */
+    gap: 0; /* Remove gap */
+    padding: 1rem 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.producao-info-pedido,
+.producao-info-vendedor,
+.producao-info-referencia {
+    padding: 0 1.5rem; /* Espaçamento interno */
+}
+.producao-info-vendedor {
+border-left: 1px solid var(--border-color);
+border-right: 1px solid var(--border-color);
+}
+
+.producao-info-pedido table,
+.producao-info-vendedor table {
+    width: 100%;
+}
+.producao-info-pedido td,
+.producao-info-vendedor td {
+    padding: 0.2rem 0; /* Espaçamento vertical menor */
+    border: none; /* Remove bordas internas */
+}
+.producao-info-pedido td:first-child, /* Coluna de Label */
+.producao-info-vendedor td:first-child {
+    width: 80px; /* Largura fixa para labels */
+}
+
+.producao-info-referencia p {
+    font-size: 0.9rem;
+    color: var(--subtle-text);
+    margin-bottom: 0.3rem;
+}
+
+/* --- Tabela de Produção --- */
+.producao-table-wrapper {
+    margin-bottom: 1.5rem;
+    border: 1px solid #000; /* Borda externa preta como no Excel */
+}
+#producao-table {
+    width: 100%;
+    border-collapse: collapse; /* Remove espaços entre bordas */
+}
+#producao-table th,
+#producao-table td {
+    border: 1px solid #000; /* Bordas pretas como no Excel */
+    padding: 0.5rem;
+    text-align: center; /* Centralizado como no Excel */
+    vertical-align: middle;
+}
+#producao-table thead th {
+    background-color: #000; /* Fundo preto no cabeçalho */
+    color: #fff;
+    font-weight: bold;
+    font-size: 0.85rem;
+    padding: 0.6rem 0.4rem;
+}
+#producao-table thead tr:last-child th { /* Subcabeçalhos */
+    font-size: 0.75rem;
+    font-weight: normal;
+}
+
+/* Larguras específicas para a tabela de produção */
+#producao-table .col-item { width: 5%; }
+#producao-table .col-desc-prod { width: 25%; text-align: left; }
+#producao-table .col-comp-prod,
+#producao-table .col-alt-prod,
+#producao-table .col-num-laminas,
+#producao-table .col-comp-lamina { width: 8%; }
+#producao-table .col-prod-un { width: 8%; }
+#producao-table .col-tipo-fechada,
+#producao-table .col-tipo-transv { width: 8%; }
+
+/* Zebra na tabela de produção */
+#producao-table tbody tr:nth-child(even) {
+    background-color: #f2f2f2; /* Cinza claro alternado */
+}
+#producao-table tbody tr td {
+    font-size: 0.9rem;
+}
+/* Linhas vazias (placeholder) */
+#producao-table tbody tr.empty-row td {
+    color: #ccc;
+    height: 35px; /* Altura mínima para linhas vazias */
+}
+
+/* --- Botões de Ação da Produção --- */
+.producao-actions {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between; /* Botões nas extremidades */
+    align-items: center;
+}
+
+/* ======================================================================= */
+/* 12. AJUSTES DE IMPRESSÃO PARA A VIEW DE PRODUÇÃO                       */
+/* ======================================================================= */
+@media print {
+
+    /* --- Regras Gerais de Impressão --- */
+
+    /* Esconde elementos marcados como no-print */
+    .no-print,
+    .modal-overlay,
+    #start-screen {
+        display: none !important;
+    }
+
+    /* Mostra elementos marcados como print-only */
+    .print-only {
+        display: inline !important;
+    }
+    .screen-only {
+        display: none !important; /* Esconde elementos só de tela */
+    }
+
+    /* Reseta estilos do corpo para impressão limpa */
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 10pt;
+        background-color: #fff !important; /* Fundo branco */
+        color: #000 !important; /* Texto preto */
+        line-height: 1.4;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Remove sombras e bordas desnecessárias dos containers principais */
+    main.wide-layout,
+    section#producao-view {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        /* A classe 'hidden' cuidará de esconder o container inativo */
+    }
+
+    /* --- Estilos Específicos para Impressão do ORÇAMENTO (#main-content) --- */
+
+    #main-content .orcamento-header {
+        border-bottom: 2px solid #000;
+    }
+    #main-content .info-display { /* Garante layout lado a lado */
+        display: flex;
+        flex-direction: row;
+    }
+    #main-content .info-display-card {
+        border: 1px solid #999;
+        padding: 0.5rem;
+    }
+    #main-content .table-wrapper {
+        overflow: hidden; /* Evita cortar tabela */
+    }
+    #main-content table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    #main-content th,
+    #main-content td {
+        border: 1px solid #333 !important;
+        padding: 0.4rem 0.5rem;
+        font-size: 9pt; /* Fonte menor na tabela */
+    }
+    #main-content thead th {
+        background-color: #eee !important;
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
+    }
+    /* Remove inputs da tabela do orçamento */
+    #main-content .inline-input,
+    #main-content .inline-desc {
+        border: none;
+        padding: 0.4rem 0.5rem;
+        width: 100%;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-color: transparent !important;
+        font-size: 9pt;
+        color: #000; /* Garante cor do texto */
+    }
+    #main-content .inline-autocomplete-wrapper { position: static; }
+    #main-content .inline-autocomplete-wrapper .inline-desc { display: block; }
+    #main-content .totals-box {
+        max-width: 400px;
+        margin-left: auto;
+        border: 1px solid #000;
+        background-color: #fff !important;
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
+    }
+    #main-content .total-row { padding: 0.5rem 1rem; border-bottom: 1px solid #999; }
+    #main-content .grand-total { background-color: #eee !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
+
+    /* --- Estilos Específicos para Impressão da PRODUÇÃO (#producao-view) --- */
+
+    #producao-view .producao-header {
+        background-color: #343a40 !important;
+        color: #fff !important;
+        border-bottom: 5px solid #dc3545 !important;
+         -webkit-print-color-adjust: exact;
+         color-adjust: exact;
+    }
+    #producao-view .producao-info-grid {
+         grid-template-columns: 1.5fr 1fr 1fr;
+         border-bottom: 1px solid #999;
+         padding-bottom: 0.5rem;
+         margin-bottom: 1rem;
+    }
+    #producao-view .producao-info-pedido td,
+    #producao-view .producao-info-vendedor td { padding: 0.1rem 0; }
+     #producao-view .producao-info-vendedor { border-left: 1px solid #999; border-right: 1px solid #999; }
+
+    #producao-view .producao-table-wrapper { border: 1px solid #000; }
+    #producao-view #producao-table th,
+    #producao-view #producao-table td {
+        border: 1px solid #000 !important;
+        font-size: 8pt;
+        padding: 0.3rem;
+    }
+    #producao-view #producao-table thead th {
+        background-color: #000 !important;
+        color: #fff !important;
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
+    }
+     #producao-view #producao-table tbody tr:nth-child(even) {
+        background-color: #f2f2f2 !important;
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
+    }
+
+    /* --- Regras de Quebra de Página --- */
+    tr, .info-display-card, .totals-box {
+        page-break-inside: avoid; /* Tenta não quebrar esses elementos entre páginas */
+    }
+    thead {
+        display: table-header-group; /* Repete cabeçalho da tabela */
+    }
+}
+
+
+
+/* =================================================================
+   10. ESTILOS DE IMPRESSÃO (PRINT)
    ================================================================= */
 @media print {
     /* Esconde tudo que não deve ser impresso */
@@ -605,6 +960,7 @@ hr.separator {
         -webkit-appearance: none;
         -moz-appearance: none;
         appearance: none;
+        background-color: transparent !important; /* Garante fundo branco */
     }
     /* Esconde o wrapper de autocomplete */
     .inline-autocomplete-wrapper {
@@ -644,61 +1000,4 @@ hr.separator {
         -webkit-print-color-adjust: exact;
         color-adjust: exact;
     }
-
-    #modal-step-2 .form-group[style*="grid-column: 1 / -1"] {
-    position: relative; /* Torna o form-group da descrição a âncora */
-}
-
-#modal-step-2 #autocomplete-list {
-    position: absolute;
-    top: 100%; /* Posiciona logo abaixo do input */
-    left: 0;
-    right: 0;
-    z-index: 1001; /* Garante que fique acima de outros elementos do modal */
-    
-    /* Re-aplica estilos que podem ter sido perdidos */
-    background: #fff;
-    border: 1px solid #ccc;
-    border-top: none;
-    border-radius: 0 0 5px 5px;
-    max-height: 150px;
-    overflow-y: auto;
-}
-#modal-step-2 #autocomplete-list li {
-    padding: 0.6rem;
-    cursor: pointer;
-}
-#modal-step-2 #autocomplete-list li:hover {
-    background: #f0f0f0;
-}
-
-
-/* --- CORREÇÃO 2: Estilo dos Botões do Modal --- */
-/* Garante que os botões dentro dos modais sigam 
-   o padrão .btn definido no style.css principal.
-*/
-.modal-actions .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.2rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 500;
-}
-.modal-actions .btn-primary {
-     background-color: var(--primary-color);
-     color: #fff;
-}
-.modal-actions .btn-primary:hover {
-     background-color: var(--primary-hover);
-}
-.modal-actions .btn-secondary {
-     background-color: var(--secondary-color);
-     color: #fff;
-}
- .modal-actions .btn-secondary:hover {
-     background-color: var(--secondary-hover);
-}
 }
