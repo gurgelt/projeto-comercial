@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Orçamento v14 - Lefer Portas</title>
+    <title>Gerador de Orçamento - ATRON</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -30,7 +30,13 @@
                 <div class="empresa-selector-container no-print">
                     <label for="empresa-select">Selecionar Empresa/Filial:</label>
                     <select id="empresa-select" class="form-select-sm"></select>
-                </div>
+                </div>    
+            <div class="theme-switch-wrapper no-print">
+                    <label class="theme-switch" for="theme-toggle">
+                    <input type="checkbox" id="theme-toggle" class="theme-toggle-input"/>
+                    <span class="slider round"></span>
+                    </label>
+    </div>
                 <div id="orcamento-actions" class="no-print">
                     <button onclick="window.print()" class="btn btn-primary">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
@@ -151,9 +157,16 @@
 
     <header class="producao-header">
         <div class="producao-logo">
-            <span style="font-size: 2rem; font-weight: bold; border: 2px solid #333; padding: 0.5rem 1rem;">LEFER</span>
+            <img src="./imgs/atron (1).png" alt="ATRON Logo" style="height: 50px; width: auto;">
         </div>
         <h1 class="producao-title">PRODUÇÃO DE PORTAS</h1>
+
+        <div class="theme-switch-wrapper no-print">
+        <label class="theme-switch" for="theme-toggle-prod"> <input type="checkbox" id="theme-toggle-prod" class="theme-toggle-input" />
+            <span class="slider round"></span>
+        </label>
+    </div>
+
         <div class="producao-header-spacer"></div> </header>
 
     <section class="producao-info-grid">

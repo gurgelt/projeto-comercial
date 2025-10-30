@@ -27,10 +27,10 @@ export const needsAltItems = [
 
 // --- Constantes de Configuração ---
 export const empresasDB = [
-    { id: 1, displayName: 'Atrox - SP', name: 'Atrox', address: 'Rua Mafra 375, Ipiranga - São Paulo/SP' },
-    { id: 2, displayName: 'Atrox - MG', name: 'Atrox', address: 'Rua Presidente Getúlio Vargas 3765 - Itapeva/MG' },
-    { id: 3, displayName: 'Atron - SP', name: 'Atron', address: 'Rua Mafra 375, Ipiranga - São Paulo/SP' },
-    { id: 4, displayName: 'Atron - MG', name: 'Atron', address: 'Rua Presidente Getúlio Vargas 3765 - Itapeva/MG' }
+    { id: 1, displayName: 'ATROX - SP', name: 'ATROX', address: 'Rua Mafra 375, Ipiranga - São Paulo/SP' },
+    { id: 2, displayName: 'ATROX - MG', name: 'ATROX', address: 'Rua Presidente Getúlio Vargas 3765 - Itapeva/MG' },
+    { id: 3, displayName: 'ATRON - SP', name: 'ATRON', address: 'Rua Mafra 375, Ipiranga - São Paulo/SP' },
+    { id: 4, displayName: 'ATRON - MG', name: 'ATRON', address: 'Rua Presidente Getúlio Vargas 3765 - Itapeva/MG' }
 ];
 export const kitsDB = {
     'todos': { name: '-- Sem Filtro de Kit --', keywords: [], items: [] },

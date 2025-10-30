@@ -1,19 +1,52 @@
 /* =================================================================
-   1. VARIÁVEIS GLOBAIS E RESET
+   1. VARIÁVEIS GLOBAIS (TEMA ATRON - MODO BLACK - PADRÃO)
    ================================================================= */
 :root {
-    --primary-color: #007bff;
-    --primary-hover: #0056b3;
-    --secondary-color: #6c757d;
-    --secondary-hover: #545b62;
-    --light-bg: #f8f9fa;
-    --border-color: #dee2e6;
-    --text-color: #212529;
-    --subtle-text: #6c757d;
+    /* Paleta ATRON */
+    --primary-color: #f7b71c;     /* Amarelo/Dourado do Logo */
+    --primary-hover: #e0a819;     /* Amarelo mais escuro */
+    --secondary-color: #6c757d;   /* Cinza Neutro */
+    --secondary-hover: #5a6268;   /* Cinza mais escuro */
+    
     --danger-color: #dc3545;
     --danger-hover: #c82333;
+
+    /* Cores do Modo Escuro (Padrão) */
+    --text-color: #f8f9fa;        /* Texto (Branco-gelo) */
+    --subtle-text: #adb5bd;      /* Texto (Cinza claro) */
+    --light-bg: #1a1a1a;          /* Fundo da Página (Quase Preto) */
+    --card-bg: #212529;           /* Fundo de Cards/Modais (Cinza Escuro) */
+    --table-header-bg: #343a40;   /* Fundo de Cabeçalho de Tabela */
+    --table-row-even-bg: #2c3034; /* Fundo de linha par */
+    --table-row-hover-bg: #3a3f44; /* Fundo de linha hover */
+    --border-color: #444444;      /* Bordas (Cinza Médio) */
+    --input-bg: #343a40;          /* Fundo de Inputs */
+    
+    /* Cores Claras (para referências) */
+    --white-color: #ffffff;
+    --black-color: #000000;
+    --light-gray-bg: #f8f9fa;
+    --dark-text-color: #212529; /* Texto escuro para fundos claros */
 }
 
+/* =================================================================
+   MELHORIA: DEFINIÇÕES DO MODO CLARO
+   ================================================================= */
+body.light-mode {
+    --text-color: #212529;        /* Texto (Preto) */
+    --subtle-text: #6c757d;      /* Texto (Cinza escuro) */
+    --light-bg: #f8f9fa;          /* Fundo da Página (Cinza claro) */
+    --card-bg: #ffffff;           /* Fundo de Cards/Modais (Branco) */
+    --table-header-bg: #e9ecef;   /* Fundo de Cabeçalho de Tabela */
+    --table-row-even-bg: #f9f9f9; /* Fundo de linha par */
+    --table-row-hover-bg: #f1f3f5; /* Fundo de linha hover */
+    --border-color: #dee2e6;      /* Bordas (Cinza claro) */
+    --input-bg: #ffffff;          /* Fundo de Inputs */
+}
+
+/* =================================================================
+   2. LAYOUT PRINCIPAL
+   ================================================================= */
 * {
     margin: 0;
     padding: 0;
@@ -25,11 +58,9 @@ body {
     background-color: var(--light-bg);
     color: var(--text-color);
     line-height: 1.6;
+    transition: background-color 0.2s ease, color 0.2s ease; /* Transição suave */
 }
 
-/* =================================================================
-   2. LAYOUT PRINCIPAL (REFEITO PARA SER MAIS LARGO)
-   ================================================================= */
 #start-screen {
     text-align: center;
     padding-top: 10rem;
@@ -39,15 +70,16 @@ body {
     margin-bottom: 1rem;
 }
 
-/* LAYOUT "WIDE" */
-main.wide-layout {
+main.wide-layout,
+section#producao-view {
     max-width: 1600px;
     width: 95%;
     margin: 2rem auto;
     padding: 2rem;
-    background-color: #ffffff;
+    background-color: var(--card-bg); 
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: background-color 0.2s ease;
 }
 
 .hidden {
@@ -66,7 +98,7 @@ main.wide-layout {
     margin-bottom: 1.5rem;
 }
 .header-info h1 {
-    color: var(--primary-color);
+    color: var(--primary-color); /* Amarelo */
     margin-bottom: 0.25rem;
 }
 .header-info p {
@@ -101,6 +133,8 @@ main.wide-layout {
     border-radius: 8px;
     padding: 1.5rem;
     height: 100%;
+    background-color: var(--light-bg); 
+    transition: background-color 0.2s ease;
 }
 .card-header {
     display: flex;
@@ -116,7 +150,7 @@ main.wide-layout {
 }
 .info-display-card p strong {
     margin-right: 0.5rem;
-    color: #343a40;
+    color: var(--text-color);
 }
 
 /* =================================================================
@@ -125,8 +159,8 @@ main.wide-layout {
 .table-wrapper {
     width: 100%;
     margin-bottom: 1.5rem;
-    overflow-x: auto; /* Permite scroll horizontal se necessário */
-    overflow: visible; /* Garante que dropdowns não sejam cortados */
+    overflow-x: auto;
+    overflow: visible; 
 }
 
 table {
@@ -142,11 +176,12 @@ th, td {
 }
 
 thead th {
-    background-color: var(--light-bg);
+    background-color: var(--table-header-bg);
     font-weight: 600;
-    position: sticky; /* Mantém cabeçalho visível */
+    position: sticky;
     top: 0;
     z-index: 10;
+    transition: background-color 0.2s ease;
 }
 
 /* Larguras das colunas */
@@ -158,39 +193,41 @@ thead th {
 .col-acao { width: 5%; }
 
 tbody tr:nth-child(even) {
-    background-color: #fdfdfd;
+    background-color: var(--table-row-even-bg);
 }
 tbody tr:hover {
-    background-color: #f1f3f5;
+    background-color: var(--table-row-hover-bg);
 }
 
 /* =================================================================
    6. EDIÇÃO INLINE NA TABELA
    ================================================================= */
 .table-wrapper td {
-    padding: 0; /* Reset de padding para inputs */
+    padding: 0; 
     position: relative;
 }
 .inline-input,
 .inline-desc {
     width: 100%;
-    padding: 0.75rem; /* Padding igual ao do TD */
+    padding: 0.75rem; 
     border: 1px solid transparent;
     border-radius: 0;
     background-color: transparent;
     font: inherit;
-    color: inherit;
-    box-sizing: border-box;
+    color: inherit; /* Texto herda do body */
+    box-sizing: border-box; 
     height: 100%;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 .inline-input:focus,
 .inline-desc:focus {
     border-color: var(--primary-color);
-    background-color: #fff;
+    background-color: var(--white-color); /* Fundo sempre branco ao focar */
+    color: var(--dark-text-color); /* Texto sempre escuro ao focar */
     outline: none;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-    position: relative; /* Garante que fique acima de outros elementos */
-    z-index: 11; /* Acima do thead sticky */
+    box-shadow: 0 0 5px rgba(247, 183, 28, 0.5); 
+    position: relative;
+    z-index: 11; 
 }
 
 /* Alinhamentos */
@@ -205,9 +242,8 @@ tbody tr:hover {
     text-align: center;
 }
 
-/* Wrapper do Autocomplete Inline */
 .inline-autocomplete-wrapper {
-    position: relative; /* Necessário para o z-index e posicionamento da lista */
+    position: relative;
     width: 100%;
     height: 100%;
     display: flex;
@@ -216,34 +252,36 @@ tbody tr:hover {
     flex-grow: 1;
 }
 
-/* Garante que o dropdown fique acima das linhas abaixo */
 .inline-autocomplete-wrapper:focus-within {
-    z-index: 101; /* Maior que outros elementos da tabela */
+    z-index: 101;
 }
 
 .autocomplete-list {
     position: absolute;
     top: 100%;
     left: 0;
-    width: 350px; /* Largura maior */
-    z-index: 100; /* Abaixo do :focus-within, mas acima do resto */
-    background: #fff;
-    border: 1px solid #ccc;
+    width: 350px; 
+    z-index: 100;
+    background: var(--card-bg); /* Fundo dinâmico */
+    border: 1px solid var(--primary-color); 
     border-radius: 4px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     max-height: 200px;
     overflow-y: auto;
+    transition: background-color 0.2s ease;
 }
 .autocomplete-list li {
     padding: 0.5rem 0.75rem;
     cursor: pointer;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-color); 
 }
 .autocomplete-list li:last-child {
     border-bottom: none;
 }
 .autocomplete-list li:hover {
-    background-color: var(--light-bg);
+    background-color: var(--primary-color); 
+    color: var(--black-color); 
 }
 
 .actions-cell {
@@ -271,10 +309,10 @@ tbody tr:hover {
     max-width: 450px;
     margin-left: auto;
     margin-right: 0;
-    
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    background: var(--light-bg);
+    background: var(--light-bg); 
+    transition: background-color 0.2s ease;
 }
 
 .total-row {
@@ -295,10 +333,14 @@ tbody tr:hover {
     font-weight: 600;
 }
 .total-row input,
-.total-row select {
-    border: 1px solid #ccc;
+.total-row select,
+.form-select, .form-select-sm {
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     padding: 0.25rem 0.5rem;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 .total-row input[type="number"] {
     width: 80px;
@@ -306,26 +348,22 @@ tbody tr:hover {
 }
 
 .grand-total {
-    background-color: #e9ecef;
+    background-color: var(--table-header-bg);
+    transition: background-color 0.2s ease;
 }
 .grand-total span {
     font-size: 1.2rem;
     font-weight: 700;
-    color: var(--text-color);
+    color: var(--primary-color); /* Total sempre em amarelo */
 }
 
-/* Classes para impressão (esconde/mostra) */
-.print-only {
-    display: none;
-}
-.screen-only {
-    display: inline;
-}
+.print-only { display: none; }
+.screen-only { display: inline; }
 
 /* =================================================================
    8. COMPONENTES GENÉRICOS (BOTÕES, FORMULÁRIOS, MODAIS)
    ================================================================= */
-.btn, .btn-primary, .btn-secondary, .btn-delete {
+.btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -338,19 +376,19 @@ tbody tr:hover {
     text-decoration: none;
     transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
-
-
 .btn-primary {
-    background-color: var(--primary-color);
-    color: #fff;
+    background-color: var(--primary-color); 
+    color: var(--black-color); 
+    font-weight: 600;
 }
 .btn-primary:hover {
     background-color: var(--primary-hover);
-    box-shadow: 0 2px 5px rgba(0,123,255,0.3);
+    color: var(--black-color);
+    box-shadow: 0 2px 5px rgba(247, 183, 28, 0.3);
 }
 .btn-secondary {
     background-color: var(--secondary-color);
-    color: #fff;
+    color: var(--white-color);
 }
 .btn-secondary:hover {
     background-color: var(--secondary-hover);
@@ -361,7 +399,7 @@ tbody tr:hover {
     padding: 0.25rem;
 }
 .btn-delete:hover {
-    background-color: #fdf2f2;
+    background-color: rgba(220, 53, 69, 0.1);
     color: var(--danger-hover);
 }
 .btn-icon {
@@ -375,11 +413,9 @@ tbody tr:hover {
     color: var(--primary-color);
 }
 
-/* --- Formulários --- */
+/* --- Formulários (Modais) --- */
 .form-select, .form-select-sm {
     padding: 0.5rem;
-    border-radius: 5px;
-    border: 1px solid #ccc;
 }
 .form-select {
     width: 100%;
@@ -397,9 +433,17 @@ tbody tr:hover {
 .form-group input[type="number"] {
     width: 100%;
     padding: 0.6rem;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
+    background-color: var(--input-bg); 
+    color: var(--text-color); 
     border-radius: 5px;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
+.form-group input:focus {
+    border-color: var(--primary-color);
+    background-color: var(--card-bg);
+}
+
 .form-grid {
     display: grid;
     gap: 1rem;
@@ -420,7 +464,7 @@ tbody tr:hover {
     gap: 0.5rem;
 }
 
-/* --- Modais --- */
+/* --- Modais (Dinâmicos) --- */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -441,14 +485,16 @@ tbody tr:hover {
     visibility: visible;
 }
 .modal-container {
-    background: #fff;
+    background: var(--card-bg); 
+    color: var(--text-color); 
     border-radius: 8px;
     padding: 2rem;
     width: 90%;
-    max-width: 60rem; /* Modal de item é grande */
+    max-width: 60rem;
     box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    border-top: 4px solid var(--primary-color); 
     transform: translateY(-20px);
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 .modal-overlay.active .modal-container {
     transform: translateY(0);
@@ -473,40 +519,22 @@ tbody tr:hover {
 .modal-actions {
     margin-top: 1.5rem;
     text-align: right;
-    display: flex; /* Para alinhar botões */
-    justify-content: space-between; /* Para separar Voltar dos outros */
+    display: flex; 
+    justify-content: space-between; 
     align-items: center;
 }
-.modal-actions div { /* Agrupa os botões da direita */
+.modal-actions div { 
     display: flex;
     gap: 0.5rem;
 }
-/* CORREÇÃO: Estilos dos botões do modal */
-.modal-actions .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.2rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 500;
-}
 .modal-actions .btn-primary {
-     background-color: var(--primary-color);
-     color: #fff;
-}
-.modal-actions .btn-primary:hover {
-     background-color: var(--primary-hover);
+    background-color: var(--primary-color);
+    color: var(--black-color);
 }
 .modal-actions .btn-secondary {
-     background-color: var(--secondary-color);
-     color: #fff;
+    background-color: var(--secondary-color);
+    color: var(--white-color);
 }
- .modal-actions .btn-secondary:hover {
-     background-color: var(--secondary-hover);
-}
-
 .modal-actions-init {
     display: flex;
     justify-content: center;
@@ -518,12 +546,13 @@ tbody tr:hover {
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 1rem 1.5rem;
-    margin-bottom: 1rem; /* Adiciona espaço antes da hr */
+    margin-bottom: 1rem; 
 }
 .kit-pronto-section legend {
     font-weight: 600;
     padding: 0 0.5rem;
     margin-left: 1rem;
+    color: var(--primary-color); 
 }
 .kit-pronto-controls {
     display: flex;
@@ -539,37 +568,37 @@ hr.separator {
     margin: 1.5rem 0;
 }
 
-/* --- Autocomplete do MODAL --- */
+/* --- Autocomplete do MODAL (Dinâmico) --- */
 #modal-step-2 .form-group[style*="grid-column: 1 / -1"] {
-    position: relative; /* Torna o form-group da descrição a âncora */
+    position: relative; 
 }
 #modal-step-2 #autocomplete-list {
     position: absolute;
-    top: 100%; /* Abaixo do input */
+    top: 100%; 
     left: 0;
-    right: 0; /* Ocupa a largura do .form-group */
-    z-index: 1001; /* Acima de outros elementos do modal */
-    
-    background: #fff;
-    border: 1px solid #ccc;
-    border-top: none; /* Evita borda dupla com o input */
+    right: 0; 
+    z-index: 1001; 
+    background: var(--card-bg); 
+    border: 1px solid var(--primary-color); 
+    border-top: none; 
     border-radius: 0 0 5px 5px;
-    max-height: 180px; /* Altura máxima controlada */
-    overflow-y: auto; /* Adiciona scroll se necessário */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Sombra para destacar */
-    
-    margin-top: -1px; /* Pequeno ajuste para colar no input */
+    max-height: 180px; 
+    overflow-y: auto; 
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3); 
+    margin-top: -1px; 
 }
 #modal-step-2 #autocomplete-list li {
-    padding: 0.6rem 0.8rem; /* Aumenta um pouco o padding interno */
+    padding: 0.6rem 0.8rem; 
     cursor: pointer;
-    border-bottom: 1px solid #f0f0f0; /* Linha separadora sutil */
+    border-bottom: 1px solid var(--border-color); 
+    color: var(--text-color);
 }
 #modal-step-2 #autocomplete-list li:last-child {
     border-bottom: none;
 }
 #modal-step-2 #autocomplete-list li:hover {
-    background: #f0f0f0;
+    background-color: var(--primary-color); 
+    color: var(--black-color); 
 }
 
 /* =================================================================
@@ -577,59 +606,67 @@ hr.separator {
    ================================================================= */
 .form-group input:disabled,
 .inline-input:disabled {
-    background-color: #e9ecef !important; /* Cor de "desabilitado", !important para sobrescrever hover */
+    background-color: var(--table-header-bg) !important; 
     cursor: not-allowed;
-    opacity: 0.7;
+    opacity: 0.5;
 }
 
 .checkbox-container input[type="checkbox"]:disabled + label {
     color: var(--subtle-text);
     cursor: not-allowed;
-    opacity: 0.7;
+    opacity: 0.5;
 }
 
-
-/* ======================================================================= */
-/*                 ESTILOS PARA A VISUALIZAÇÃO DE PRODUÇÃO            */
-/* ======================================================================= */
-
+/* =================================================================
+   10. ESTILOS DA VIEW DE PRODUÇÃO
+   ================================================================= */
 #producao-view {
-    /* Herda a maioria dos estilos de .wide-layout */
-    border: 1px solid #ccc; /* Adiciona uma borda sutil à seção inteira */
+    border: 1px solid var(--border-color);
 }
-
-/* --- Cabeçalho da Produção --- */
+/* O header da produção é sempre escuro (branding) */
 .producao-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.5rem;
-    background-color: #343a40; /* Fundo escuro como no Excel */
+    background-color: #000000; 
     color: #fff;
-    border-bottom: 5px solid #dc3545; /* Linha vermelha grossa */
+    border-bottom: 5px solid var(--primary-color); /* Linha Amarela */
 }
-.producao-logo span { /* Estilo simples para o texto LEFER */
-    border-color: #fff !important;
-    color: #fff;
+.producao-logo span { 
+    font-size: 2rem;
+    font-weight: bold;
+    border: 2px solid var(--white-color); 
+    padding: 0.5rem 1rem;
+    color: var(--white-color);
+}
+/* Corrigido para img */
+.producao-logo img {
+    height: 50px;
+    width: auto;
 }
 .producao-title {
     font-size: 1.8rem;
     font-weight: 600;
     text-align: center;
-    flex-grow: 1; /* Faz o título ocupar o espaço central */
+    flex-grow: 1; 
 }
 .producao-logo,
-.producao-header-spacer {
-    flex-basis: 150px; /* Define uma largura base para logo/spacer para ajudar no alinhamento */
+.producao-header-spacer,
+.theme-switch-wrapper { /* Garante que o switch não quebre o layout */
+    flex-basis: 150px; 
     flex-shrink: 0;
+    display: flex;
+    justify-content: center;
 }
-.producao-header-spacer { visibility: hidden; } /* Apenas para espaçamento */
+.producao-header-spacer { visibility: hidden; } 
+/* No header do orçamento, o switch é alinhado pelo flex-gap */
+.orcamento-header .theme-switch-wrapper { flex-basis: auto; }
 
-/* --- Grid de Informações Gerais --- */
 .producao-info-grid {
     display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr; /* Colunas: Pedido | Vendedor | Referencia */
-    gap: 0; /* Remove gap */
+    grid-template-columns: 1.5fr 1fr 1fr; 
+    gap: 0;
     padding: 1rem 0;
     margin-bottom: 1.5rem;
     border-bottom: 1px solid var(--border-color);
@@ -637,11 +674,11 @@ hr.separator {
 .producao-info-pedido,
 .producao-info-vendedor,
 .producao-info-referencia {
-    padding: 0 1.5rem; /* Espaçamento interno */
+    padding: 0 1.5rem; 
 }
 .producao-info-vendedor {
-border-left: 1px solid var(--border-color);
-border-right: 1px solid var(--border-color);
+     border-left: 1px solid var(--border-color);
+     border-right: 1px solid var(--border-color);
 }
 
 .producao-info-pedido table,
@@ -650,12 +687,12 @@ border-right: 1px solid var(--border-color);
 }
 .producao-info-pedido td,
 .producao-info-vendedor td {
-    padding: 0.2rem 0; /* Espaçamento vertical menor */
-    border: none; /* Remove bordas internas */
+    padding: 0.2rem 0; 
+    border: none; 
 }
-.producao-info-pedido td:first-child, /* Coluna de Label */
+.producao-info-pedido td:first-child, 
 .producao-info-vendedor td:first-child {
-    width: 80px; /* Largura fixa para labels */
+    width: 80px; 
 }
 
 .producao-info-referencia p {
@@ -664,101 +701,98 @@ border-right: 1px solid var(--border-color);
     margin-bottom: 0.3rem;
 }
 
-/* --- Tabela de Produção --- */
 .producao-table-wrapper {
     margin-bottom: 1.5rem;
-    border: 1px solid #000; /* Borda externa preta como no Excel */
+    border: 1px solid var(--border-color);
 }
+/* Tabela de produção sempre escura (estilo da planilha) */
 #producao-table {
     width: 100%;
-    border-collapse: collapse; /* Remove espaços entre bordas */
+    border-collapse: collapse; 
 }
 #producao-table th,
 #producao-table td {
-    border: 1px solid #000; /* Bordas pretas como no Excel */
+    border: 1px solid #444; /* Borda cinza escura */
     padding: 0.5rem;
-    text-align: center; /* Centralizado como no Excel */
+    text-align: center; 
     vertical-align: middle;
 }
 #producao-table thead th {
-    background-color: #000; /* Fundo preto no cabeçalho */
-    color: #fff;
+    background-color: var(--black-color); 
+    color: var(--white-color);
     font-weight: bold;
     font-size: 0.85rem;
     padding: 0.6rem 0.4rem;
+    border-color: #444;
 }
-#producao-table thead tr:last-child th { /* Subcabeçalhos */
-    font-size: 0.75rem;
-    font-weight: normal;
+#producao-table thead tr:last-child th { 
+     font-size: 0.75rem;
+     font-weight: normal;
 }
 
-/* Larguras específicas para a tabela de produção */
-#producao-table .col-item { width: 5%; }
-#producao-table .col-desc-prod { width: 25%; text-align: left; }
-#producao-table .col-comp-prod,
-#producao-table .col-alt-prod,
-#producao-table .col-num-laminas,
-#producao-table .col-comp-lamina { width: 8%; }
-#producao-table .col-prod-un { width: 8%; }
-#producao-table .col-tipo-fechada,
-#producao-table .col-tipo-transv { width: 8%; }
-
-/* Zebra na tabela de produção */
+#producao-table .col-desc-prod { text-align: left; padding-left: 5px;}
+#producao-table tbody tr {
+    background-color: var(--card-bg); /* Fundo escuro */
+    color: var(--text-color); /* Texto claro */
+}
 #producao-table tbody tr:nth-child(even) {
-    background-color: #f2f2f2; /* Cinza claro alternado */
+    background-color: var(--table-row-even-bg); /* Fundo alternado escuro */
 }
+/* No modo claro, a tabela de produção inverte */
+body.light-mode #producao-table tbody tr {
+    background-color: var(--white-color);
+    color: var(--dark-text-color);
+}
+body.light-mode #producao-table tbody tr:nth-child(even) {
+    background-color: var(--light-gray-bg);
+}
+body.light-mode #producao-table th,
+body.light-mode #producao-table td {
+    border: 1px solid #999;
+}
+
 #producao-table tbody tr td {
     font-size: 0.9rem;
 }
-/* Linhas vazias (placeholder) */
 #producao-table tbody tr.empty-row td {
+    color: #444; 
+    height: 35px; 
+}
+body.light-mode #producao-table tbody tr.empty-row td {
     color: #ccc;
-    height: 35px; /* Altura mínima para linhas vazias */
 }
 
-/* --- Botões de Ação da Produção --- */
+
 .producao-actions {
     padding-top: 1rem;
     border-top: 1px solid var(--border-color);
     display: flex;
-    justify-content: space-between; /* Botões nas extremidades */
+    justify-content: space-between; 
     align-items: center;
 }
 
-/* ======================================================================= */
-/* 12. AJUSTES DE IMPRESSÃO PARA A VIEW DE PRODUÇÃO                       */
-/* ======================================================================= */
+/* =================================================================
+   11. ESTILOS DE IMPRESSÃO (CORRIGIDO)
+   ================================================================= */
 @media print {
-
-    /* --- Regras Gerais de Impressão --- */
-
-    /* Esconde elementos marcados como no-print */
-    .no-print,
-    .modal-overlay,
-    #start-screen {
+    .no-print, .modal-overlay, #start-screen {
         display: none !important;
     }
-
-    /* Mostra elementos marcados como print-only */
     .print-only {
         display: inline !important;
     }
     .screen-only {
-        display: none !important; /* Esconde elementos só de tela */
+        display: none !important; 
     }
-
-    /* Reseta estilos do corpo para impressão limpa */
     body {
         font-family: Arial, sans-serif;
         font-size: 10pt;
-        background-color: #fff !important; /* Fundo branco */
-        color: #000 !important; /* Texto preto */
+        background-color: #fff !important; 
+        color: #000 !important; 
         line-height: 1.4;
         margin: 0;
         padding: 0;
     }
-
-    /* Remove sombras e bordas desnecessárias dos containers principais */
     main.wide-layout,
     section#producao-view {
         width: 100% !important;
@@ -767,75 +801,59 @@ border-right: 1px solid var(--border-color);
         padding: 0 !important;
         border: none !important;
         box-shadow: none !important;
-        /* A classe 'hidden' cuidará de esconder o container inativo */
+        background-color: #fff !important; 
+        color: #000 !important; 
     }
 
-    /* --- Estilos Específicos para Impressão do ORÇAMENTO (#main-content) --- */
-
-    #main-content .orcamento-header {
-        border-bottom: 2px solid #000;
-    }
-    #main-content .info-display { /* Garante layout lado a lado */
-        display: flex;
-        flex-direction: row;
-    }
-    #main-content .info-display-card {
-        border: 1px solid #999;
-        padding: 0.5rem;
-    }
-    #main-content .table-wrapper {
-        overflow: hidden; /* Evita cortar tabela */
-    }
-    #main-content table {
-        width: 100%;
-        border-collapse: collapse;
-    }
+    /* --- Impressão ORÇAMENTO (#main-content) --- */
+    #main-content .orcamento-header { border-bottom: 2px solid #000; }
+    #main-content .header-info h1 { color: #000; }
+    #main-content .info-display { display: flex; flex-direction: row; }
+    #main-content .info-display-card { border: 1px solid #999; padding: 0.5rem; }
+    #main-content .table-wrapper { overflow: hidden; }
+    #main-content table { width: 100%; border-collapse: collapse; }
     #main-content th,
     #main-content td {
         border: 1px solid #333 !important;
         padding: 0.4rem 0.5rem;
-        font-size: 9pt; /* Fonte menor na tabela */
+        font-size: 9pt; 
+        color: #000 !important;
     }
     #main-content thead th {
         background-color: #eee !important;
         -webkit-print-color-adjust: exact;
         color-adjust: exact;
     }
-    /* Remove inputs da tabela do orçamento */
     #main-content .inline-input,
     #main-content .inline-desc {
-        border: none;
-        padding: 0.4rem 0.5rem;
-        width: 100%;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
+        border: none; padding: 0.4rem 0.5rem; width: 100%;
+        -webkit-appearance: none; appearance: none;
         background-color: transparent !important;
-        font-size: 9pt;
-        color: #000; /* Garante cor do texto */
+        font-size: 9pt; color: #000 !important; 
     }
     #main-content .inline-autocomplete-wrapper { position: static; }
     #main-content .inline-autocomplete-wrapper .inline-desc { display: block; }
     #main-content .totals-box {
-        max-width: 400px;
-        margin-left: auto;
-        border: 1px solid #000;
-        background-color: #fff !important;
-        -webkit-print-color-adjust: exact;
-        color-adjust: exact;
+        max-width: 400px; margin-left: auto; border: 1px solid #000;
+        background-color: #fff !important; -webkit-print-color-adjust: exact; color-adjust: exact;
     }
     #main-content .total-row { padding: 0.5rem 1rem; border-bottom: 1px solid #999; }
     #main-content .grand-total { background-color: #eee !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
+    #main-content .grand-total span { color: #000 !important; }
 
-    /* --- Estilos Específicos para Impressão da PRODUÇÃO (#producao-view) --- */
-
+    /* --- Impressão PRODUÇÃO (#producao-view) --- */
     #producao-view .producao-header {
-        background-color: #343a40 !important;
+        background-color: #000 !important; 
         color: #fff !important;
-        border-bottom: 5px solid #dc3545 !important;
+        border-bottom: 5px solid #f7b71c !important; /* Linha amarela */
          -webkit-print-color-adjust: exact;
          color-adjust: exact;
     }
+     #producao-view .producao-logo span,
+     #producao-view .producao-logo img {
+         border-color: #fff !important;
+         color: #fff !important;
+     }
     #producao-view .producao-info-grid {
          grid-template-columns: 1.5fr 1fr 1fr;
          border-bottom: 1px solid #999;
@@ -852,6 +870,7 @@ border-right: 1px solid var(--border-color);
         border: 1px solid #000 !important;
         font-size: 8pt;
         padding: 0.3rem;
+        color: #000 !important;
     }
     #producao-view #producao-table thead th {
         background-color: #000 !important;
@@ -864,140 +883,71 @@ border-right: 1px solid var(--border-color);
         -webkit-print-color-adjust: exact;
         color-adjust: exact;
     }
+     #producao-view #producao-table tbody tr.empty-row td {
+         color: #ccc !important;
+     }
 
     /* --- Regras de Quebra de Página --- */
     tr, .info-display-card, .totals-box {
-        page-break-inside: avoid; /* Tenta não quebrar esses elementos entre páginas */
+        page-break-inside: avoid; 
     }
     thead {
-        display: table-header-group; /* Repete cabeçalho da tabela */
+        display: table-header-group; 
     }
 }
 
 
-
 /* =================================================================
-   10. ESTILOS DE IMPRESSÃO (PRINT)
+   12. TEMA (LIGHT/DARK) TOGGLE
    ================================================================= */
-@media print {
-    /* Esconde tudo que não deve ser impresso */
-    .no-print,
-    .modal-overlay,
-    #start-screen,
-    .orcamento-header .header-actions {
-        display: none !important;
-    }
-
-    /* Mostra os valores de total que estavam escondidos */
-    .print-only {
-        display: inline !important;
-    }
-    .screen-only {
-        display: none !important;
-    }
-    
-    /* Reseta o layout do corpo */
-    body {
-        font-family: Arial, sans-serif;
-        font-size: 10pt;
-        background-color: #fff;
-        color: #000;
-        line-height: 1.4;
-    }
-
-    main.wide-layout {
-        width: 100%;
-        max-width: 100%;
-        margin: 0;
-        padding: 0;
-        border: none;
-        box-shadow: none;
-    }
-
-    .orcamento-header {
-        border-bottom: 2px solid #000;
-    }
-
-    /* Garante que as colunas de info fiquem lado a lado */
-    .info-display {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        gap: 2rem;
-    }
-    .info-column {
-        flex: 1;
-    }
-    .info-display-card {
-        border: 1px solid #999;
-        padding: 0.5rem;
-    }
-
-    /* Estilos da Tabela para Impressão */
-    .table-wrapper {
-        overflow: hidden;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    th, td {
-        border: 1px solid #333 !important;
-        padding: 0.4rem 0.5rem;
-    }
-    thead th {
-        background-color: #eee !important;
-        -webkit-print-color-adjust: exact; /* Força o fundo no Chrome */
-        color-adjust: exact; /* Padrão */
-    }
-
-    /* Remove os inputs da tabela, mostrando só o texto */
-    .inline-input,
-    .inline-desc {
-        border: none;
-        padding: 0.4rem 0.5rem;
-        width: 100%;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        background-color: transparent !important; /* Garante fundo branco */
-    }
-    /* Esconde o wrapper de autocomplete */
-    .inline-autocomplete-wrapper {
-        position: static;
-    }
-    .inline-autocomplete-wrapper .inline-desc {
-        display: block; /* Garante que o texto apareça */
-    }
-
-    /* Controle de quebra de página */
-    tr {
-        page-break-inside: avoid;
-    }
-    thead {
-        display: table-header-group; /* Repete o cabeçalho em cada página */
-    }
-
-    /* Estilos da Seção de Totais para Impressão */
-    .totals-section {
-        margin-top: 1.5rem;
-        page-break-inside: avoid; /* Não quebra a caixa de totais */
-    }
-    .totals-box {
-        max-width: 400px;
-        margin-left: auto;
-        border: 1px solid #000;
-        background-color: #fff !important;
-        -webkit-print-color-adjust: exact;
-        color-adjust: exact;
-    }
-    .total-row {
-        padding: 0.5rem 1rem;
-        border-bottom: 1px solid #999;
-    }
-    .grand-total {
-        background-color: #eee !important;
-        -webkit-print-color-adjust: exact;
-        color-adjust: exact;
-    }
+.theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px; /* Largura menor */
+    height: 24px; /* Altura menor */
+}
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px; /* Bola menor */
+    width: 16px; /* Bola menor */
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+}
+input:checked + .slider {
+    background-color: var(--primary-color); /* Amarelo quando LIGADO (light mode) */
+}
+input:focus + .slider {
+    box-shadow: 0 0 1px var(--primary-color);
+}
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+.slider.round {
+    border-radius: 34px;
+}
+.slider.round:before {
+    border-radius: 50%;
 }

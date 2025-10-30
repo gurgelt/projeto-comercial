@@ -7,7 +7,7 @@ import {
     incluirRoloCheck, voltarBtn, itemQtdInput, itemUnidInput,
     itemVlrInput, kitSelect, btnAddInlineRow, btnAddItemModal,
     freteTipoSelect, freteValorRow, freteValorInput, getProdutosDB, calcM2Slats,
-    needsCompItems, needsAltItems, kitsDB, lastCalculatedDimensions // Importa o objeto
+    needsCompItems, needsAltItems, kitsDB, lastCalculatedDimensions
 } from '../state.js';
 import { formatarCPFCNPJ, hideAllAutocompletes, parseCurrency } from '../utils.js';
 import { buscarPrecoProduto } from '../api.js';
@@ -52,7 +52,6 @@ export function setupBudgetEventListeners() {
         orcamentoModal.classList.remove('active');
     });
 
-    // --- Listener de Submit do ItemForm ---
     itemForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         let newItem;
@@ -78,11 +77,8 @@ export function setupBudgetEventListeners() {
             const comprimentoProducao = comprimentoM;
             const alturaProducao = incluirRoloCheck.checked ? alturaM + 0.60 : alturaM;
             
-            // --- CORREÇÃO AQUI ---
-            // Não reatribua a variável, modifique suas propriedades
             lastCalculatedDimensions.altura = alturaM;
             lastCalculatedDimensions.comprimento = comprimentoM; 
-            // --- FIM DA CORREÇÃO ---
 
             newItem = { descricao, comp: comprimentoProducao.toFixed(2), alt: alturaProducao.toFixed(2), qtd: areaTotalM2, unid: 'm²', vlr: precoPorM2, descPerc: 0 };
         } else if (needsComp) {
@@ -100,7 +96,6 @@ export function setupBudgetEventListeners() {
         orcamento.itens.push(newItem);
         itemsAddedNames.push(newItem.descricao);
 
-        // --- Lógica de Auto-preenchimento do Kit ---
         const selectedKitKey = kitSelect.value;
         if (isCalcM2 && selectedKitKey !== 'todos' && kitsDB[selectedKitKey].items.length > 0) {
             
@@ -141,12 +136,11 @@ export function setupBudgetEventListeners() {
                 itemsAddedNames.push(companionItem.descricao);
             }
         }
-        // --- Fim da Lógica do Kit ---
 
         alert(`${itemsAddedNames.length} item(ns) adicionados:\n- ${itemsAddedNames.join('\n- ')}`);
         renderTable();
         itemForm.reset();
-        gerenciarEstadoFormularioItem(""); // Reseta campos do modal
+        gerenciarEstadoFormularioItem(""); 
         itemDescInput.focus();
     });
 
@@ -163,7 +157,7 @@ export function setupBudgetEventListeners() {
         for (const key in clienteInputs) {
             if (clienteInputs[key]) { clienteInputs[key].value = orcamento.cliente[key] || ''; }
         }
-        formatarCPFCNPJ(clienteInputs.cnpj); // Formata ao abrir
+        formatarCPFCNPJ(clienteInputs.cnpj); 
         orcamentoModal.classList.add('active');
         document.getElementById('modal-step-1').classList.remove('hidden');
         document.getElementById('modal-step-2').classList.add('hidden');
@@ -182,7 +176,7 @@ export function setupBudgetEventListeners() {
         itemForm.reset();
         kitSelect.value = 'todos';
         incluirRoloCheck.checked = false;
-        gerenciarEstadoFormularioItem(""); // Reseta estado dos campos
+        gerenciarEstadoFormularioItem(""); 
         itemDescInput.focus();
     });
 
@@ -285,6 +279,60 @@ export function setupBudgetEventListeners() {
             return;
         }
         // A lógica de clique na LI agora está dentro de populateAutocompleteList (em budgetUI.js)
+    });
+
+    // --- NOVO: Listener de Navegação com Setas na Tabela ---
+    tableBody.addEventListener('keydown', (e) => {
+        const target = e.target;
+        // Só ativa se estivermos em um input da tabela
+        if (!target.classList.contains('inline-input') && !target.classList.contains('inline-desc')) {
+            return;
+        }
+
+        const key = e.key;
+        if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
+            return; // Ignora outras teclas
+        }
+
+        e.preventDefault(); // Impede o cursor de mover *dentro* do input
+
+        const currentCell = target.closest('td');
+        const currentRow = currentCell.closest('tr');
+        const cellIndex = currentCell.cellIndex;
+        const rowIndex = currentRow.rowIndex - 1; // Ajusta para 0-index do tbody
+
+        let nextElement = null;
+
+        try {
+            if (key === 'ArrowUp' && rowIndex > 0) {
+                // Move para cima
+                nextElement = tableBody.rows[rowIndex - 1].cells[cellIndex]?.querySelector('.inline-input, .inline-desc');
+            } else if (key === 'ArrowDown' && rowIndex < tableBody.rows.length - 1) {
+                // Move para baixo
+                nextElement = tableBody.rows[rowIndex + 1].cells[cellIndex]?.querySelector('.inline-input, .inline-desc');
+            } else if (key === 'ArrowLeft' && cellIndex > 1) { // 1 é a 'Descrição'
+                // Move para esquerda
+                nextElement = currentRow.cells[cellIndex - 1]?.querySelector('.inline-input, .inline-desc');
+            } else if (key === 'ArrowRight' && cellIndex < currentRow.cells.length - 3) { // Pula 'Total' e 'Ação'
+                // Move para direita
+                nextElement = currentRow.cells[cellIndex + 1]?.querySelector('.inline-input, .inline-desc');
+            }
+        } catch (err) {
+            console.warn("Erro na navegação por setas:", err);
+            return;
+        }
+
+        // Foca no próximo elemento se ele existir e NÃO estiver desabilitado
+        if (nextElement && !nextElement.disabled) {
+            nextElement.focus();
+            nextElement.select(); // Seleciona o texto para facilitar a edição
+        } else if (nextElement && nextElement.disabled) {
+            // Tenta pular a célula desabilitada (lógica simples, pode falhar em bordas)
+            // Simula o usuário pressionando a tecla novamente a partir da célula desabilitada
+            // Isso cria uma "repetição" da tecla para pular a célula
+             const nextEvent = new KeyboardEvent('keydown', { key: key, bubbles: true, cancelable: true });
+             nextElement.dispatchEvent(nextEvent);
+        }
     });
 
     // --- Fim da Edição Inline ---
