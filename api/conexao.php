@@ -2,7 +2,7 @@
 
 //Configurações do Banco//
 
-$servidor = "localhost";
+$servidor = "atriumdesign.com.br";
 $usuario = "atriu019_eduardo";
 $senha = "GrupoAD7788";
 $banco = "atriu019_comercial";

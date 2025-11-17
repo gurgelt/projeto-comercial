@@ -1,28 +1,28 @@
 // js/production/productionUI.js
 import {
-    orcamento,
-    calcM2Slats,       // Importa lâminas
-    needsCompItems,  // <-- ADICIONADO
-    needsAltItems,     // <-- ADICIONADO
-    producaoTableBody
-} from '../state.js';
-// Não precisamos de formatCurrency aqui por enquanto
+    calcM2Slats,
+    needsCompItems,
+    needsAltItems,
+} from '../config/constants.js'; // Importa regras
+import {
+    producaoTableBody,
+    prodPedidoNumEl,
+    prodClienteNomeEl,
+    prodClienteContatoEl,
+    prodDataPedidoEl,
+    prodVendedorNomeEl
+} from '../ui/domElements.js'; // Importa seletores
 
+// ### VERIFIQUE SE O 'EXPORT' ESTÁ AQUI ###
 export function renderProductionView(orcamentoData) {
     console.log("Renderizando view de produção com dados:", orcamentoData);
 
-    // 1. Preencher Cabeçalho e Informações Gerais
-    const pedidoNumEl = document.getElementById('prod-pedido-num');
-    const clienteNomeEl = document.getElementById('prod-cliente-nome');
-    const clienteContatoEl = document.getElementById('prod-cliente-contato');
-    const dataPedidoEl = document.getElementById('prod-data-pedido');
-    const vendedorNomeEl = document.getElementById('prod-vendedor-nome');
-
-    if (pedidoNumEl) pedidoNumEl.textContent = document.getElementById('orcamento-num-display')?.textContent || 'N/A';
-    if (clienteNomeEl) clienteNomeEl.textContent = orcamentoData.cliente.nome || 'N/A';
-    if (clienteContatoEl) clienteContatoEl.textContent = orcamentoData.cliente.contato || 'N/A';
-    if (dataPedidoEl) dataPedidoEl.textContent = document.getElementById('orcamento-data-display')?.textContent || new Date().toLocaleDateString('pt-BR');
-    if (vendedorNomeEl) vendedorNomeEl.textContent = "Vendedor Padrão"; // Placeholder
+    // 1. Preencher Cabeçalho (AGORA LENDO DO OBJETO 'orcamentoData')
+    if (prodPedidoNumEl) prodPedidoNumEl.textContent = orcamentoData.numero || 'N/A';
+    if (prodClienteNomeEl) prodClienteNomeEl.textContent = orcamentoData.cliente.nome || 'N/A';
+    if (prodClienteContatoEl) prodClienteContatoEl.textContent = orcamentoData.cliente.contato || 'N/A';
+    if (prodDataPedidoEl) prodDataPedidoEl.textContent = orcamentoData.data || 'N/A';
+    if (prodVendedorNomeEl) prodVendedorNomeEl.textContent = "Vendedor Padrão"; // Placeholder
 
     // 2. Limpar e Preencher Tabela de Produção
     if (!producaoTableBody) {
@@ -32,18 +32,16 @@ export function renderProductionView(orcamentoData) {
     producaoTableBody.innerHTML = '';
     let itemCounter = 1;
 
-    // --- LÓGICA ATUALIZADA: Iterar sobre TODOS os itens ---
+    // (O restante da sua lógica de renderização da tabela)
     orcamentoData.itens.forEach(item => {
         const upperName = (item.descricao || '').toUpperCase();
         
-        // Verifica o tipo de item
         const isLamina = calcM2Slats.some(slat => upperName.includes(slat));
-        const isNeedsComp = needsCompItems.some(i => upperName.includes(i)); // Ex: Soleira, Tubo
-        const isNeedsAlt = needsAltItems.some(i => upperName.includes(i)); // Ex: Guia
+        const isNeedsComp = needsCompItems.some(i => upperName.includes(i));
+        const isNeedsAlt = needsAltItems.some(i => upperName.includes(i));
 
         const row = document.createElement('tr');
 
-        // Define valores padrão
         let dimComp = item.comp > 0 ? item.comp : '-';
         let dimAlt = item.alt > 0 ? item.alt : '-';
         let prodUn = '-';
@@ -52,33 +50,23 @@ export function renderProductionView(orcamentoData) {
         let tipoFechada = '-';
         let tipoTransv = '-';
 
-        // Lógica condicional para preencher colunas
         if (isLamina) {
-            // Lógica de Lâmina (existente)
             const alturaLaminaCM = upperName.includes('SUPER CANA') ? 10 : 7.5;
             numLaminas = Math.ceil((parseFloat(item.alt) * 100) / alturaLaminaCM);
-            solComp = item.comp; // Comprimento da lâmina
+            solComp = item.comp;
             tipoFechada = upperName.includes('FECHADA') ? 'Sim' : '-';
             tipoTransv = upperName.includes('TRANSVISION') || upperName.includes('FURADA') ? 'Sim' : '-';
-        
         } else if (isNeedsComp) {
-            // Lógica para Tubo, Soleira
             prodUn = item.qtd;
-            solComp = item.comp; // Comprimento do item
-        
+            solComp = item.comp;
         } else if (isNeedsAlt) {
-            // Lógica para Guia
             prodUn = item.qtd;
-            // dimAlt já foi preenchido acima
-        
         } else {
-            // Outros itens (Motor, Controle, etc.)
             prodUn = item.qtd;
-            dimComp = '-'; // Zera dimensões se não forem relevantes
+            dimComp = '-';
             dimAlt = '-';
         }
 
-        // Monta a linha da tabela
         row.innerHTML = `
             <td>${String(itemCounter++).padStart(3, '0')}</td>
             <td style="text-align: left; padding-left: 5px;">${item.descricao}</td> <td>${dimComp}</td>
@@ -91,9 +79,8 @@ export function renderProductionView(orcamentoData) {
         `;
         producaoTableBody.appendChild(row);
     });
-    // --- FIM DA LÓGICA ATUALIZADA ---
 
-    // Adiciona linhas vazias se houver menos de 12 itens
+    // Adiciona linhas vazias
     while (itemCounter <= 12) {
         producaoTableBody.innerHTML += `
             <tr class="empty-row">

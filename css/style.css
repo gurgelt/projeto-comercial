@@ -443,6 +443,21 @@ tbody tr:hover {
     border-color: var(--primary-color);
     background-color: var(--card-bg);
 }
+/* Remove setas de inputs numéricos */
+.inline-input[type=number]::-webkit-inner-spin-button, 
+.inline-input[type=number]::-webkit-outer-spin-button,
+.form-group input[type=number]::-webkit-inner-spin-button, 
+.form-group input[type=number]::-webkit-outer-spin-button,
+.total-row input[type=number]::-webkit-inner-spin-button, 
+.total-row input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none; 
+    margin: 0; 
+}
+.inline-input[type=number],
+.form-group input[type=number],
+.total-row input[type=number] {
+    -moz-appearance: textfield;
+}
 
 .form-grid {
     display: grid;
@@ -845,8 +860,7 @@ body.light-mode #producao-table tbody tr.empty-row td {
         font-size: 9pt; color: #000 !important; 
     }
     
-    /* ***** CORREÇÃO 1: INPUTS DESABILITADOS NA IMPRESSÃO ***** */
-    /* Esta regra é mais forte e garante que fiquem visíveis */
+    /* CORREÇÃO: Inputs desabilitados na impressão */
     body #main-content .inline-input:disabled,
     body #producao-view .inline-input:disabled {
         opacity: 1 !important;
@@ -981,7 +995,7 @@ body.light-mode .moon-icon {
 }
 body.light-mode .sun-icon {
     transform: scale(1);
-    opacity: 0;
+    opacity: 1;
 }
 
 
@@ -993,33 +1007,71 @@ body.light-mode .sun-icon {
     margin: 0;  /* Remove as margens do navegador */
 }
 
+/* =========================================
+   REGRAS DE IMPRESSÃO (Print Styles)
+   ========================================= */
+@media print {
+
+    /* --- CORREÇÃO 1: O "CLIPPING" (CORTE) --- */
+
+    /* Força as células da tabela a terem um padding lateral mínimo
+       para dar espaço ao conteúdo. */
+    .table-wrapper th,
+    .table-wrapper td {
+        padding: 4px 3px !important; /* Reduz o padding lateral */
+        vertical-align: top;
+    }
+
+    /* Remove a aparência de "input" (caixa, borda, etc.) */
+    .table-wrapper table input.inline-input {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        
+        border: none;
+        background: transparent !important;
+        padding: 0 1px !important; /* Padding interno mínimo no input */
+        margin: 0;
+        width: 100%;
+        font-size: inherit;
+        font-family: inherit;
+        box-shadow: none;
+    }
+
+    /* --- CORREÇÃO 2: ALINHAMENTO DO TEXTO --- */
+    
+    /* Alinha o texto DENTRO dos inputs de números/valores à direita */
+    .table-wrapper table input[data-field="comp"],
+    .table-wrapper table input[data-field="alt"],
+    .table-wrapper table input[data-field="qtd"],
+    .table-wrapper table input[data-field="vlr"],
+    .table-wrapper table input[data-field="descPerc"] {
+        text-align: right;
+    }
+    /* Alinha o texto DENTRO do input de unidade ao centro */
+    .table-wrapper table input[data-field="unid"] {
+         text-align: center;
+    }
+    /* Alinha o texto DENTRO do input de descrição à esquerda */
+    .table-wrapper table input.inline-desc {
+        text-align: left;
+    }
 
 
-.inline-input[type=number]::-webkit-inner-spin-button, 
-.inline-input[type=number]::-webkit-outer-spin-button { 
-    -webkit-appearance: none; 
-    margin: 0; 
-}
+    /* --- CORREÇÃO 3: INPUTS DESABILITADOS (APAGADOS) --- */
 
-/* Para Firefox */
-.inline-input[type=number] {
-    -moz-appearance: textfield;
-}
+    /* Força inputs (habilitados ou não) a terem cor preta */
+    .table-wrapper table input.inline-input {
+        color: #000 !important;
+        -webkit-text-fill-color: #000 !important;
+    }
 
-/* Também podemos aplicar ao modal e totais, se desejar */
-.form-group input[type=number]::-webkit-inner-spin-button, 
-.form-group input[type=number]::-webkit-outer-spin-button { 
-    -webkit-appearance: none; 
-    margin: 0; 
-}
-.form-group input[type=number] {
-    -moz-appearance: textfield;
-}
-.total-row input[type=number]::-webkit-inner-spin-button, 
-.total-row input[type=number]::-webkit-outer-spin-button { 
-    -webkit-appearance: none; 
-    margin: 0; 
-}
-.total-row input[type=number] {
-    -moz-appearance: textfield;
+    /* Garante que os desabilitados não fiquem 'apagados' */
+    .table-wrapper table input.inline-input:disabled,
+    .table-wrapper table input.inline-input[disabled] {
+        color: #000 !important;
+        opacity: 1 !important;
+        background: transparent !important;
+        -webkit-text-fill-color: #000 !important;
+    }
 }

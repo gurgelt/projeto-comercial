@@ -1,24 +1,37 @@
-import { mainContent, producaoView, orcamento } from './state.js';
+import { getOrcamento } from './store.js'; // Importa o getter do store
+// import { orcamento } from './state.js'; // Remove import direto do state
+// ######################################################
+
+import { mainContent, producaoView } from './ui/domElements.js';
 import { renderProductionView } from './production/productionUI.js';
-import { setupProductionEventListeners } from './production/productionEvents.js';
+// import { setupProductionEventListeners } from './production/productionEvents.js'; // Importação removida
 import { setupBudgetEventListeners } from './budget/budgetEvents.js';
-// Importar setupBudgetEventListeners se precisar reativar eventos específicos  
+
 export function showBudgetView() {
     producaoView.classList.add('hidden');
     mainContent.classList.remove('hidden');
     console.log("Mostrando view do Orçamento");
-    // Se necessário, reativar/atualizar algo na UI do orçamento ao voltar
-    // setupBudgetEventListeners(); // Talvez não seja necessário reativar tudo
 }
 
 export function showProductionView() {
-    if (orcamento.itens.length === 0) {
+    // ######################################################
+    // ### MUDANÇA (Lógica) ###
+    // ######################################################
+    const orcamentoAtual = getOrcamento(); // Usa o getter do store
+
+    if (orcamentoAtual.itens.length === 0) {
+    // ######################################################
         alert("Adicione itens ao orçamento antes de gerar o pedido.");
         return;
     }
     mainContent.classList.add('hidden');
     producaoView.classList.remove('hidden');
-    renderProductionView(orcamento); // Passa o estado atual do orçamento
-    setupProductionEventListeners(); // Configura eventos da tela de produção
+    
+    // ######################################################
+    renderProductionView(orcamentoAtual); // Passa o estado atual do store
+    
+    // setupProductionEventListeners(); // LINHA REMOVIDA (Evento agora é tratado por delegação no main.js)
+    // ######################################################
+    
     console.log("Mostrando view de Produção");
 }

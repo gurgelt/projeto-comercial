@@ -3,36 +3,38 @@ import { carregarProdutos } from './api.js';
 import { popularEmpresasSelect, popularKitsSelect, atualizarDadosEmpresa } from './budget/budgetUI.js';
 import { setupBudgetEventListeners } from './budget/budgetEvents.js';
 
-// --- LÓGICA DO TEMA (LIGHT/DARK) ---
+// --- NOSSAS NOVAS IMPORTAÇÕES ---
+import { showBudgetView } from './navigation.js';
+import { 
+    themeToggleButton,
+    producaoView // Importa o container da view de produção
+} from './ui/domElements.js'; 
+// --- FIM DAS NOVAS IMPORTAÇÕES ---
+
+// --- LÓGICA DO TEMA (Refatorada) ---
 function setupThemeToggle() {
-    // 1. Encontra o botão único
-    const toggleButton = document.getElementById('theme-toggle-btn');
     const body = document.body;
     
-    if (!toggleButton) {
+    // 1. USA O SELETOR IMPORTADO
+    if (!themeToggleButton) {
         console.warn("Botão de tema não encontrado.");
         return;
     }
 
     // 2. Aplica o tema salvo ao carregar
     const currentTheme = localStorage.getItem('theme');
-    // Se o tema salvo for 'light', aplica a classe
     if (currentTheme === 'light') {
         body.classList.add('light-mode');
     } else {
-        // Garante que o padrão seja escuro se não houver nada salvo
         body.classList.remove('light-mode');
     }
 
     // 3. Adiciona o listener de clique
-    toggleButton.addEventListener('click', () => {
-        // Verifica se a classe 'light-mode' está PRESENTE
+    themeToggleButton.addEventListener('click', () => {
         if (body.classList.contains('light-mode')) {
-            // Se sim, remove (volta ao dark mode)
             body.classList.remove('light-mode');
             localStorage.setItem('theme', 'dark');
         } else {
-            // Se não, adiciona (ativa o light mode)
             body.classList.add('light-mode');
             localStorage.setItem('theme', 'light');
         }
@@ -41,17 +43,41 @@ function setupThemeToggle() {
 // --- FIM DA LÓGICA DO TEMA ---
 
 
+// --- NOVO: DELEGAÇÃO DE EVENTOS ---
+function setupGlobalEventListeners() {
+    
+    // Delegação de Eventos da View de Produção
+    if (producaoView) {
+        producaoView.addEventListener('click', (event) => {
+            
+            // Verifica se o clique foi no botão "voltar"
+            if (event.target.closest('#voltar-orcamento-btn')) {
+                showBudgetView();
+            }
+
+            // (Outros cliques da tela de produção podem ser tratados aqui)
+            // if (event.target.closest('.btn-imprimir-prod')) { ... }
+        });
+    }
+}
+// --- FIM DA DELEGAÇÃO ---
+
+
 async function init() {
     console.log("Iniciando aplicação...");
     
-    // Configura o tema ANTES de tudo para evitar "flash"
-    setupThemeToggle(); 
+    setupThemeToggle(); // Configura o tema
     
-    await carregarProdutos(); // Carrega os dados primeiro
+    await carregarProdutos(); // Carrega os dados
+    
+    // Configura a UI inicial (Budget)
     popularEmpresasSelect();
-    atualizarDadosEmpresa(); // Chama a função importada
+    atualizarDadosEmpresa();
     popularKitsSelect();
-    setupBudgetEventListeners();   // Configura todos os eventos iniciais (do orçamento)
+    
+    // Configura TODOS os listeners
+    setupBudgetEventListeners();   // Configura eventos do orçamento
+    setupGlobalEventListeners(); // Configura a delegação de eventos (Produção)
     
     console.log("Aplicação inicializada!");
 }

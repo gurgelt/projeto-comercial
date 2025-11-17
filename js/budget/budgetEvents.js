@@ -1,57 +1,192 @@
 // js/budget/budgetEvents.js
+import { showProductionView } from '../navigation.js';
+// Importações de Estado
 import {
-    orcamento, clienteInputs, itemForm, editOrcamentoForm, tableBody,
-    clienteForm as clienteFormRef,
+    lastCalculatedDimensions, getProdutosDB
+} from '../state.js';
+// Importações de Configuração/Regras
+import {
+    calcM2Slats, needsCompItems, needsAltItems, kitsDB
+} from '../config/constants.js';
+// Importações de Elementos do DOM
+import {
+    clienteInputs, itemForm, editOrcamentoForm, tableBody,
+    clienteForm as clienteFormRef, // Mantém o alias
     startScreen, mainContent, orcamentoModal, editOrcamentoModal,
     itemDescInput, autocompleteList, itemAltInput, itemCompInput,
     incluirRoloCheck, voltarBtn, itemQtdInput, itemUnidInput,
     itemVlrInput, kitSelect, btnAddInlineRow, btnAddItemModal,
-    freteTipoSelect, freteValorRow, freteValorInput, getProdutosDB, calcM2Slats,
-    needsCompItems, needsAltItems, kitsDB, lastCalculatedDimensions,
-    empresaSelect // <--- CORREÇÃO 2: Importa o seletor da empresa
-} from '../state.js';
+    freteTipoSelect, freteValorRow, freteValorInput, empresaSelect,
+    clientTypeModal,
+    orcamentoNumDisplay,
+    orcamentoDataDisplay,
+    descontoGeralInput,
+    editOrcamentoNumInput,
+    editOrcamentoDataInput,
+    modalStep1,
+    modalStep2,
+    itemDescPercInput
+} from '../ui/domElements.js';
 import { formatarCPFCNPJ, hideAllAutocompletes, parseCurrency } from '../utils.js';
-import { buscarPrecoProduto } from '../api.js';
 import {
-    renderInfo, renderTable, gerenciarEstadoFormularioItem,
-    calcularEAtualizarCamposPorta, recalcularTudo,
+    renderInfo, 
+    renderTable,
+    addNewRow,
+    updateTableRow,
+    gerenciarEstadoFormularioItem,
+    calcularEAtualizarCamposPorta,
+    recalcularTudo,
     populateAutocompleteList,
-    atualizarDadosEmpresa // <--- CORREÇÃO 2: Importa a função
+    atualizarDadosEmpresa
 } from './budgetUI.js';
-import { showProductionView } from '../navigation.js';
+import { buscarPrecoProduto } from '../api.js';
+import { handleAddItemSubmit } from './budgetService.js';
+import {
+    getOrcamento,
+    setTipoCliente,
+    setClientInfo,
+    addItemToBudget,
+    removeItemFromBudget,
+    setOrcamentoInfo,
+    updateItemCompleto
+} from '../store.js';
+
+// --- Funções Auxiliares de Eventos ---
+
+function updateModalAutocomplete() {
+    if (!itemDescInput || !autocompleteList || !kitSelect) return;
+    populateAutocompleteList(itemDescInput, autocompleteList, (source) => {
+        const selectedKitKey = kitSelect.value;
+        const upperQuery = itemDescInput.value.toUpperCase();
+        const filteredByQuery = source.filter(p => p.toUpperCase().includes(upperQuery));
+        
+        if (selectedKitKey !== 'todos') {
+            // Usa a lista de 'constants.js' (ex: "SUPER CANA")
+            return filteredByQuery.filter(p => 
+                calcM2Slats.some(slat => p.toUpperCase().includes(slat))
+            );
+        }
+        return filteredByQuery;
+    });
+}
+
+async function handleModalAutocompleteClick(productName) {
+    itemDescInput.value = productName;
+    autocompleteList.classList.add('hidden');
+    const produtoInfo = await buscarPrecoProduto(productName);
+    if (produtoInfo && !produtoInfo.erro) {
+        itemVlrInput.value = produtoInfo.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        itemUnidInput.value = produtoInfo.unidade || 'un';
+    } else {
+        itemVlrInput.value = '0,00';
+        itemUnidInput.value = 'un';
+    }
+    gerenciarEstadoFormularioItem(productName);
+    if (!itemAltInput.disabled) itemAltInput.focus();
+    else if (!itemCompInput.disabled) itemCompInput.focus();
+    else if (!itemQtdInput.disabled) itemQtdInput.focus();
+}
+
+async function handleInlineAutocompleteClick(productName, targetInput) {
+    const index = targetInput.dataset.index;
+    const item = getOrcamento().itens[index];
+    if (item === undefined) return;
+    
+    const produtoInfo = await buscarPrecoProduto(productName);
+    item.descricao = productName;
+    if (produtoInfo && !produtoInfo.erro) {
+        item.vlr = produtoInfo.preco;
+        item.unid = produtoInfo.unidade || 'un';
+    } else {
+        item.vlr = 0;
+        item.unid = 'un';
+    }
+    item.alt = 0;
+    item.comp = 0;
+    item.qtd = 1;
+
+    const upperName = productName.toUpperCase();
+    let fieldToFocus = 'qtd'; // Padrão
+    
+    if (calcM2Slats.some(slat => upperName.includes(slat))) {
+        fieldToFocus = 'comp';
+    } else if (needsCompItems.some(item => upperName.includes(item))) {
+        fieldToFocus = 'comp';
+    } else if (needsAltItems.some(item => upperName.includes(item))) {
+        fieldToFocus = 'alt';
+    }
+
+    updateItemCompleto(index, item, { focusField: fieldToFocus });
+}
+
+
+// --- Função Principal de Setup ---
 
 export function setupBudgetEventListeners() {
 
+    // --- O "OUVINTE" GLOBAL (Fluxo de Dados Unidirecional) ---
+    document.addEventListener('stateChanged', (e) => {
+        const { action, payload } = e.detail;
+        console.log(`Ouvinte Global: Ação = ${action}`, payload);
+        switch (action) {
+            case 'itemAdded':
+                addNewRow(payload.item, payload.index);
+                if (payload.options?.focusAndSelect) {
+                    setTimeout(() => {
+                        const lastRowInput = tableBody.querySelector('tr:last-child .inline-desc');
+                        if (lastRowInput) {
+                            lastRowInput.focus();
+                            lastRowInput.select();
+                            const list = lastRowInput.nextElementSibling;
+                            if (list) {
+                                populateAutocompleteList(lastRowInput, list, () => getProdutosDB());
+                            }
+                        }
+                    }, 0);
+                }
+                break;
+            case 'itemUpdated':
+                updateTableRow(payload.item, payload.index, payload.options); 
+                break;
+            case 'clientInfoUpdated':
+                renderInfo(payload.cliente);
+                break;
+            case 'recalculateTotals':
+                recalcularTudo(payload.itens);
+                break;
+            case 'fullRender':
+                renderTable(payload.itens);
+                renderInfo(payload.cliente);
+                break;
+        }
+    });
+
     // --- Eventos Iniciais e de Navegação Básica ---
-    const initBtn = document.getElementById('init-orcamento-btn');
+    const initBtn = document.getElementById('init-orcamento-btn'); 
     if (initBtn) {
         initBtn.addEventListener('click', () => {
-            document.getElementById('client-type-modal').classList.add('active');
+            clientTypeModal.classList.add('active');
         });
     }
-
-    // --- CORREÇÃO 2: Listener do seletor de empresa ---
     if (empresaSelect) {
         empresaSelect.addEventListener('change', atualizarDadosEmpresa);
     }
-    // --- FIM DA CORREÇÃO ---
-
     document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.target.closest('.modal-overlay').classList.remove('active');
         });
     });
-
     const handleTipoClienteSelect = (e) => {
-        orcamento.tipoCliente = e.target.dataset.tipo;
-        const orcamentoNumDisplay = document.getElementById('orcamento-num-display');
-        if (orcamentoNumDisplay) {
-            orcamentoNumDisplay.textContent = Math.floor(10000 + Math.random() * 90000);
-        }
-        document.getElementById('client-type-modal').classList.remove('active');
+        const tipo = e.target.dataset.tipo;
+        setTipoCliente(tipo);
+        const numeroOrcamento = Math.floor(10000 + Math.random() * 90000);
+        const dataOrcamento = new Date().toLocaleDateString('pt-BR');
+        setOrcamentoInfo(numeroOrcamento, dataOrcamento); 
+        if (orcamentoNumDisplay) orcamentoNumDisplay.textContent = numeroOrcamento;
+        if (orcamentoDataDisplay) orcamentoDataDisplay.textContent = dataOrcamento;
+        clientTypeModal.classList.remove('active');
         startScreen.classList.add('hidden');
         mainContent.classList.remove('hidden');
-        renderTable(); // Renderiza a tabela vazia
     };
     document.getElementById('tipo-serralheiro-btn').addEventListener('click', handleTipoClienteSelect);
     document.getElementById('tipo-cliente-final-btn').addEventListener('click', handleTipoClienteSelect);
@@ -60,10 +195,13 @@ export function setupBudgetEventListeners() {
     if (clienteFormRef) {
         clienteFormRef.addEventListener('submit', (e) => {
             e.preventDefault();
+            let clienteData = {};
             for (const key in clienteInputs) {
-                if (clienteInputs[key]) { orcamento.cliente[key] = clienteInputs[key].value; }
+                if (clienteInputs[key]) { 
+                    clienteData[key] = clienteInputs[key].value;
+                }
             }
-            renderInfo();
+            setClientInfo(clienteData);
             orcamentoModal.classList.remove('active');
         });
     }
@@ -71,141 +209,90 @@ export function setupBudgetEventListeners() {
     if (itemForm) {
         itemForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            let newItem;
             const descricao = itemDescInput.value;
-            let itemsAddedNames = [];
-
-            const upperName = (descricao || '').toUpperCase();
-            const isCalcM2 = calcM2Slats.some(slat => upperName.includes(slat));
-            const needsComp = needsCompItems.some(item => upperName.includes(item));
-            const needsAlt = needsAltItems.some(item => upperName.includes(item));
-            
             if (!descricao) {
                  alert('Selecione uma descrição para o item.');
                  return;
             }
-
-            if (isCalcM2) {
-                let alturaM = parseFloat(itemAltInput.value);
-                const comprimentoM = parseFloat(itemCompInput.value);
-                if (isNaN(alturaM) || alturaM <= 0 || isNaN(comprimentoM) || comprimentoM <= 0) { alert('Para calcular, preencha a Altura e o Comprimento.'); return; }
-                const areaTotalM2 = parseFloat(itemQtdInput.value);
-                const precoPorM2 = parseCurrency(itemVlrInput.value);
-                const comprimentoProducao = comprimentoM;
-                const alturaProducao = incluirRoloCheck.checked ? alturaM + 0.60 : alturaM;
-                
-                lastCalculatedDimensions.altura = alturaM;
-                lastCalculatedDimensions.comprimento = comprimentoM; 
-
-                newItem = { descricao, comp: comprimentoProducao.toFixed(2), alt: alturaProducao.toFixed(2), qtd: areaTotalM2, unid: 'm²', vlr: precoPorM2, descPerc: 0 };
-            } else if (needsComp) {
-                const comprimentoM = parseFloat(itemCompInput.value);
-                if (isNaN(comprimentoM) || comprimentoM <= 0) { alert('Preencha o Comprimento.'); return; }
-                newItem = { descricao, comp: comprimentoM.toFixed(2), alt: 0, qtd: parseFloat(itemQtdInput.value) || 1, unid: 'm', vlr: parseCurrency(itemVlrInput.value) || 0, descPerc: parseFloat(document.getElementById('item-desc-perc').value) || 0 };
-            } else if (needsAlt) {
-                const alturaM = parseFloat(itemAltInput.value);
-                if (isNaN(alturaM) || alturaM <= 0) { alert('Preencha a Altura.'); return; }
-                newItem = { descricao, comp: 0, alt: alturaM.toFixed(2), qtd: parseFloat(itemQtdInput.value) || 1, unid: 'm', vlr: parseCurrency(itemVlrInput.value) || 0, descPerc: parseFloat(document.getElementById('item-desc-perc').value) || 0 };
-            } else {
-                newItem = { descricao, comp: 0, alt: 0, qtd: parseFloat(itemQtdInput.value) || 1, unid: itemUnidInput.value, vlr: parseCurrency(itemVlrInput.value) || 0, descPerc: parseFloat(document.getElementById('item-desc-perc').value) || 0 };
+            const upperName = (descricao || '').toUpperCase();
+            const isCalcM2 = calcM2Slats.some(slat => upperName.includes(slat));
+            
+            const formData = {
+                descricao: descricao,
+                alt: parseCurrency(itemAltInput.value),
+                comp: parseCurrency(itemCompInput.value),
+                qtd: parseCurrency(itemQtdInput.value),
+                vlr: parseCurrency(itemVlrInput.value),
+                unid: itemUnidInput.value,
+                descPerc: parseCurrency(itemDescPercInput.value),
+                incluirRolo: incluirRoloCheck.checked,
+                selectedKitKey: kitSelect.value,
+                isCalcM2: isCalcM2,
+                needsComp: needsCompItems.some(item => upperName.includes(item)),
+                needsAlt: needsAltItems.some(item => upperName.includes(item))
+            };
+            try {
+                const itemsAddedNames = await handleAddItemSubmit(formData);
+                alert(`${itemsAddedNames.length} item(ns) adicionados:\n- ${itemsAddedNames.join('\n- ')}`);
+                itemForm.reset();
+                gerenciarEstadoFormularioItem("");
+                updateModalAutocomplete();
+                itemDescInput.focus();
+            } catch (error) {
+                console.error("Falha ao adicionar item:", error);
+                alert(error.message);
             }
-
-            orcamento.itens.push(newItem);
-            itemsAddedNames.push(newItem.descricao);
-
-            const selectedKitKey = kitSelect.value;
-            if (isCalcM2 && selectedKitKey !== 'todos' && kitsDB[selectedKitKey].items.length > 0) {
-                
-                const kit = kitsDB[selectedKitKey];
-                
-                for (const itemName of kit.items) {
-                    if (newItem.descricao.toUpperCase().includes(itemName.toUpperCase())) continue; 
-
-                    const produtoInfo = await buscarPrecoProduto(itemName);
-                    const preco = produtoInfo ? produtoInfo.preco : 0;
-                    const unidadeDB = produtoInfo ? (produtoInfo.unidade || 'un') : 'un';
-                    
-                    const upperItemName = itemName.toUpperCase();
-                    let comp = 0;
-                    let alt = 0;
-                    let qtd = 1; 
-                    let unid = unidadeDB; 
-
-                    if (needsCompItems.some(i => upperItemName.includes(i))) {
-                        comp = lastCalculatedDimensions.comprimento.toFixed(2); 
-                        unid = 'm'; 
-                    } 
-                    else if (needsAltItems.some(i => upperItemName.includes(i))) {
-                        alt = lastCalculatedDimensions.altura.toFixed(2); 
-                        unid = 'm'; 
-                    }
-                    
-                    const companionItem = {
-                        descricao: itemName, 
-                        comp: comp, 
-                        alt: alt, 
-                        qtd: qtd, 
-                        unid: unid, 
-                        vlr: preco, 
-                        descPerc: 0
-                    };
-                    orcamento.itens.push(companionItem);
-                    itemsAddedNames.push(companionItem.descricao);
-                }
-            }
-
-            alert(`${itemsAddedNames.length} item(ns) adicionados:\n- ${itemsAddedNames.join('\n- ')}`);
-            renderTable();
-            itemForm.reset();
-            gerenciarEstadoFormularioItem(""); // Reseta campos do modal
-            itemDescInput.focus();
         });
     }
-
 
     if (editOrcamentoForm) {
         editOrcamentoForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            document.getElementById('orcamento-num-display').textContent = document.getElementById('orcamento-num-edit').value;
-            document.getElementById('orcamento-data-display').textContent = document.getElementById('orcamento-data-edit').value;
+            const numero = editOrcamentoNumInput.value;
+            const data = editOrcamentoDataInput.value;
+            setOrcamentoInfo(numero, data);
+            orcamentoNumDisplay.textContent = numero;
+            orcamentoDataDisplay.textContent = data;
             editOrcamentoModal.classList.remove('active');
         });
     }
 
     // --- Eventos dos Botões ---
     document.getElementById('edit-cliente-btn').addEventListener('click', () => {
+        const state = getOrcamento();
         for (const key in clienteInputs) {
-            if (clienteInputs[key]) { clienteInputs[key].value = orcamento.cliente[key] || ''; }
+            if (clienteInputs[key]) { clienteInputs[key].value = state.cliente[key] || ''; }
         }
-        formatarCPFCNPJ(clienteInputs.cnpj); // Formata ao abrir
+        formatarCPFCNPJ(clienteInputs.cnpj);
         orcamentoModal.classList.add('active');
-        document.getElementById('modal-step-1').classList.remove('hidden');
-        document.getElementById('modal-step-2').classList.add('hidden');
+        modalStep1.classList.remove('hidden');
+        modalStep2.classList.add('hidden');
     });
 
     document.getElementById('edit-orcamento-btn').addEventListener('click', () => {
-        document.getElementById('orcamento-num-edit').value = document.getElementById('orcamento-num-display').textContent;
-        document.getElementById('orcamento-data-edit').value = document.getElementById('orcamento-data-display').textContent;
+        editOrcamentoNumInput.value = orcamentoNumDisplay.textContent;
+        editOrcamentoDataInput.value = orcamentoDataDisplay.textContent;
         editOrcamentoModal.classList.add('active');
     });
 
     if (btnAddItemModal) {
         btnAddItemModal.addEventListener('click', () => {
             orcamentoModal.classList.add('active');
-            document.getElementById('modal-step-1').classList.add('hidden');
-            document.getElementById('modal-step-2').classList.remove('hidden');
+            modalStep1.classList.add('hidden');
+            modalStep2.classList.remove('hidden');
             itemForm.reset();
             kitSelect.value = 'todos';
             incluirRoloCheck.checked = false;
-            gerenciarEstadoFormularioItem(""); // Reseta estado dos campos
+            gerenciarEstadoFormularioItem("");
+            updateModalAutocomplete();
             itemDescInput.focus();
         });
     }
 
     if (voltarBtn) {
         voltarBtn.addEventListener('click', () => {
-            document.getElementById('modal-step-2').classList.add('hidden');
-            document.getElementById('modal-step-1').classList.remove('hidden');
+            modalStep2.classList.add('hidden');
+            modalStep1.classList.remove('hidden');
         });
     }
 
@@ -216,8 +303,7 @@ export function setupBudgetEventListeners() {
     if (clienteInputs.cnpj) clienteInputs.cnpj.addEventListener('input', (e) => formatarCPFCNPJ(e.target));
 
     // --- Eventos de Totais ---
-    const descontoGeralInput = document.getElementById('desconto-geral');
-    if (descontoGeralInput) descontoGeralInput.addEventListener('input', recalcularTudo);
+    if (descontoGeralInput) descontoGeralInput.addEventListener('input', () => recalcularTudo());
     if (freteTipoSelect) {
         freteTipoSelect.addEventListener('change', () => {
             freteValorRow.classList.toggle('hidden', freteTipoSelect.value !== 'Correio');
@@ -225,126 +311,132 @@ export function setupBudgetEventListeners() {
             recalcularTudo();
         });
     }
-    if (freteValorInput) freteValorInput.addEventListener('input', recalcularTudo);
+    if (freteValorInput) freteValorInput.addEventListener('input', () => recalcularTudo());
 
     // --- Eventos da Tabela (Edição Inline) ---
+
     if (btnAddInlineRow) {
-        btnAddInlineRow.addEventListener('click', () => {
-            orcamento.itens.push({ descricao: 'NOVO ITEM - Clique para editar', comp: 0, alt: 0, qtd: 1, unid: 'un', vlr: 0, descPerc: 0 });
-            renderTable();
-            const lastRowInput = tableBody.querySelector('tr:last-child .inline-desc');
-            if (lastRowInput) {
-                lastRowInput.focus();
-                lastRowInput.select();
-            }
+        btnAddInlineRow.addEventListener('click', (e) => { 
+            e.stopPropagation(); // Impede o 'document.click' de fechar a lista
+            
+            addItemToBudget(
+                { descricao: 'NOVO ITEM - Clique para editar', comp: 0, alt: 0, qtd: 1, unid: 'un', vlr: 0, descPerc: 0 },
+                { focusAndSelect: true }
+            );
         });
     }
 
+
     if (tableBody) {
+        // Listener para MUDANÇAS (inputs)
         tableBody.addEventListener('change', (e) => {
             const target = e.target;
             if (target.classList.contains('inline-input') || target.classList.contains('inline-desc')) {
                 const index = target.dataset.index;
-                if (!orcamento.itens[index]) return;
+                const state = getOrcamento();
+                if (!state.itens[index]) return;
 
                 const field = target.dataset.field || 'descricao';
                 let value = target.value;
 
-                if (field === 'vlr') { value = parseCurrency(value); }
-                else if (field !== 'descricao' && field !== 'unid') { value = parseFloat(value) || 0; }
-
-                orcamento.itens[index][field] = value;
-
-                const item = orcamento.itens[index];
+                if (field === 'vlr' || field === 'comp' || field === 'alt' || field === 'qtd' || field === 'descPerc') {
+                    value = parseCurrency(value) || 0;
+                }
+                
+                const item = state.itens[index];
+                item[field] = value;
+                
                 const upperName = (item.descricao || '').toUpperCase();
                 const isCalcM2 = calcM2Slats.some(slat => upperName.includes(slat));
 
-                let forceRender = false;
-
                 if (isCalcM2 && (field === 'comp' || field === 'alt')) {
-                    const areaTotalM2 = (parseFloat(item.comp) || 0) * (parseFloat(item.alt) || 0);
-                    orcamento.itens[index].qtd = parseFloat(areaTotalM2.toFixed(2));
-                    orcamento.itens[index].unid = 'm²';
-                    forceRender = true;
+                    const areaTotalM2 = (item.comp || 0) * (item.alt || 0);
+                    item.qtd = parseFloat(areaTotalM2.toFixed(2));
+                    item.unid = 'm²';
                 }
-
-                if (field === 'qtd' || field === 'vlr' || field === 'descPerc' || forceRender) {
-                    const focusedDataField = document.activeElement.dataset.field;
-                    const focusedDataIndex = document.activeElement.dataset.index;
-                    renderTable();
-                    if (focusedDataField && focusedDataIndex) {
-                        const newTarget = tableBody.querySelector(`[data-index="${focusedDataIndex}"][data-field="${focusedDataField}"]`);
-                        if (newTarget) newTarget.focus();
-                    }
-                } else {
-                    recalcularTudo();
-                }
+                
+                updateItemCompleto(index, item, { focusField: field });
             }
         });
 
-        // --- Autocomplete e Ações Inline ---
-        tableBody.addEventListener('focusin', (e) => {
-            const input = e.target;
-            if (input.classList.contains('inline-desc')) {
-                const list = input.nextElementSibling;
-                if (!list) return;
-                populateAutocompleteList(input, list, () => getProdutosDB()); // Filtro retorna todos
-            }
-        });
-
+        // Listener para INPUT (filtrar autocomplete)
         tableBody.addEventListener('input', (e) => {
             const input = e.target;
             if (input.classList.contains('inline-desc')) {
                 const list = input.nextElementSibling;
                 if (!list) return;
-                populateAutocompleteList(input, list, () => getProdutosDB());
+                populateAutocompleteList(input, list, (source) => source.filter(p => p.toUpperCase().includes(input.value.toUpperCase())));
             }
         });
 
+        // Listener para CLIQUES (remover item E autocomplete)
         tableBody.addEventListener('click', (e) => {
-            if (e.target.closest('.remove-item')) {
-                const index = e.target.closest('tr').dataset.index;
-                orcamento.itens.splice(index, 1);
-                renderTable();
+            // Delegação para o Autocomplete (clique na LI)
+            const li = e.target.closest('.autocomplete-list li');
+            if (li && li.dataset.productName) {
+                e.stopPropagation(); // <-- Impede o 'document.click' de fechar a lista
+                const productName = li.dataset.productName;
+                const wrapper = e.target.closest('.inline-autocomplete-wrapper');
+                const input = wrapper?.querySelector('.inline-desc');
+                if (input) {
+                    handleInlineAutocompleteClick(productName, input);
+                }
                 return;
             }
+            
+            // Delegação para o Botão Remover
+            if (e.target.closest('.remove-item')) {
+                e.stopPropagation(); // <-- Impede o 'document.click'
+                const index = e.target.closest('tr').dataset.index;
+                removeItemFromBudget(index);
+                return;
+            }
+
+            // ######################################################
+            // ### A CORREÇÃO DO BUG "CLIQUE DUPLO" ESTÁ AQUI ###
+            // ######################################################
+            // Delegação para ABRIR/FILTRAR o autocomplete (clique no INPUT)
+            const input = e.target;
+            if (input.classList.contains('inline-desc')) {
+                e.stopPropagation(); // <-- Impede o 'document.click' de fechar a lista
+                const list = input.nextElementSibling;
+                if (!list) return;
+                
+                // CORRIGIDO: Mostra a lista filtrada, igual ao listener 'input'
+                populateAutocompleteList(input, list, (source) => {
+                    const query = input.value.toUpperCase();
+                    return source.filter(p => p.toUpperCase().includes(query));
+                });
+            }
+            // ######################################################
         });
         
+        // Listener para NAVEGAÇÃO (setas)
         tableBody.addEventListener('keydown', (e) => {
             const target = e.target;
-            if (!target.classList.contains('inline-input') && !target.classList.contains('inline-desc')) {
-                return;
-            }
-
+            if (!target.classList.contains('inline-input') && !target.classList.contains('inline-desc')) return;
             const key = e.key;
-            if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
-                return; 
-            }
-
+            if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) return; 
             e.preventDefault(); 
-
             const currentCell = target.closest('td');
             const currentRow = currentCell.closest('tr');
             const cellIndex = currentCell.cellIndex;
             const rowIndex = currentRow.rowIndex - 1; 
-
             let nextElement = null;
-
             try {
                 if (key === 'ArrowUp' && rowIndex > 0) {
                     nextElement = tableBody.rows[rowIndex - 1].cells[cellIndex]?.querySelector('.inline-input, .inline-desc');
                 } else if (key === 'ArrowDown' && rowIndex < tableBody.rows.length - 1) {
                     nextElement = tableBody.rows[rowIndex + 1].cells[cellIndex]?.querySelector('.inline-input, .inline-desc');
-                } else if (key === 'ArrowLeft' && cellIndex > 1) { // 1 é a 'Descrição'
+                } else if (key === 'ArrowLeft' && cellIndex > 1) {
                     nextElement = currentRow.cells[cellIndex - 1]?.querySelector('.inline-input, .inline-desc');
-                } else if (key === 'ArrowRight' && cellIndex < currentRow.cells.length - 3) { // Pula 'Total' e 'Ação'
+                } else if (key === 'ArrowRight' && cellIndex < currentRow.cells.length - 3) {
                     nextElement = currentRow.cells[cellIndex + 1]?.querySelector('.inline-input, .inline-desc');
                 }
             } catch (err) {
                 console.warn("Erro na navegação por setas:", err);
                 return;
             }
-
             if (nextElement && !nextElement.disabled) {
                 nextElement.focus();
                 nextElement.select(); 
@@ -358,38 +450,30 @@ export function setupBudgetEventListeners() {
 
 
     // --- Autocomplete do Modal ---
-    if (itemDescInput) {
-        itemDescInput.addEventListener('focus', () => {
-             populateAutocompleteList(itemDescInput, autocompleteList, (source) => {
-                const selectedKitKey = kitSelect.value;
-                if (selectedKitKey !== 'todos') {
-                    return source.filter(p => calcM2Slats.includes(p));
-                }
-                return source;
-            });
-        });
-
-        itemDescInput.addEventListener('input', () => {
-             populateAutocompleteList(itemDescInput, autocompleteList, (source) => {
-                const selectedKitKey = kitSelect.value;
-                if (selectedKitKey !== 'todos') {
-                    return source.filter(p => calcM2Slats.includes(p));
-                }
-                return source;
-            });
+    if (autocompleteList) {
+        autocompleteList.addEventListener('click', (e) => {
+            const li = e.target.closest('li');
+            if (li && li.dataset.productName) {
+                handleModalAutocompleteClick(li.dataset.productName);
+            }
         });
     }
-    
+    if (itemDescInput) {
+        itemDescInput.addEventListener('focus', () => updateModalAutocomplete());
+        itemDescInput.addEventListener('input', () => updateModalAutocomplete());
+    }
     if (kitSelect) {
         kitSelect.addEventListener('change', () => {
             itemDescInput.value = '';
-            itemDescInput.focus(); // Foca para mostrar a lista já filtrada
-            gerenciarEstadoFormularioItem(""); // Reseta o estado
+            gerenciarEstadoFormularioItem("");
+            updateModalAutocomplete();
+            itemDescInput.focus();
         });
     }
 
     // --- Listener Global ---
     document.addEventListener('click', (e) => {
+        // Este é o 'listener' que fecha os autocompletes.
         if (!e.target.closest('.inline-autocomplete-wrapper') && e.target.id !== 'item-desc' && !e.target.closest('.autocomplete-list')) {
             hideAllAutocompletes();
         }
