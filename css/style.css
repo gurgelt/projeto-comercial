@@ -1050,7 +1050,7 @@ body.light-mode .sun-icon {
     }
     /* Alinha o texto DENTRO do input de unidade ao centro */
     .table-wrapper table input[data-field="unid"] {
-         text-align: center;
+        text-align: center;
     }
     /* Alinha o texto DENTRO do input de descrição à esquerda */
     .table-wrapper table input.inline-desc {

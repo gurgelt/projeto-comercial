@@ -1,57 +1,32 @@
 // js/budget/budgetEvents.js
 import { showProductionView } from '../navigation.js';
-// Importações de Estado
-import {
-    lastCalculatedDimensions, getProdutosDB
-} from '../state.js';
-// Importações de Configuração/Regras
-import {
-    calcM2Slats, needsCompItems, needsAltItems, kitsDB
-} from '../config/constants.js';
-// Importações de Elementos do DOM
+import { lastCalculatedDimensions, getProdutosDB } from '../state.js';
+import { calcM2Slats, needsCompItems, needsAltItems, kitsDB } from '../config/constants.js';
 import {
     clienteInputs, itemForm, editOrcamentoForm, tableBody,
-    clienteForm as clienteFormRef, // Mantém o alias
-    startScreen, mainContent, orcamentoModal, editOrcamentoModal,
+    clienteForm as clienteFormRef, startScreen, mainContent, orcamentoModal, editOrcamentoModal,
     itemDescInput, autocompleteList, itemAltInput, itemCompInput,
     incluirRoloCheck, voltarBtn, itemQtdInput, itemUnidInput,
     itemVlrInput, kitSelect, btnAddInlineRow, btnAddItemModal,
     freteTipoSelect, freteValorRow, freteValorInput, empresaSelect,
-    clientTypeModal,
-    orcamentoNumDisplay,
-    orcamentoDataDisplay,
-    descontoGeralInput,
-    editOrcamentoNumInput,
-    editOrcamentoDataInput,
-    modalStep1,
-    modalStep2,
-    itemDescPercInput
+    clientTypeModal, orcamentoNumDisplay, orcamentoDataDisplay,
+    descontoGeralInput, editOrcamentoNumInput, editOrcamentoDataInput,
+    modalStep1, modalStep2, itemDescPercInput
 } from '../ui/domElements.js';
 import { formatarCPFCNPJ, hideAllAutocompletes, parseCurrency } from '../utils.js';
 import {
-    renderInfo, 
-    renderTable,
-    addNewRow,
-    updateTableRow,
-    gerenciarEstadoFormularioItem,
-    calcularEAtualizarCamposPorta,
-    recalcularTudo,
-    populateAutocompleteList,
-    atualizarDadosEmpresa
+    renderInfo, renderTable, addNewRow, updateTableRow,
+    gerenciarEstadoFormularioItem, calcularEAtualizarCamposPorta,
+    recalcularTudo, populateAutocompleteList, atualizarDadosEmpresa
 } from './budgetUI.js';
 import { buscarPrecoProduto } from '../api.js';
 import { handleAddItemSubmit } from './budgetService.js';
 import {
-    getOrcamento,
-    setTipoCliente,
-    setClientInfo,
-    addItemToBudget,
-    removeItemFromBudget,
-    setOrcamentoInfo,
-    updateItemCompleto
+    getOrcamento, setTipoCliente, setClientInfo, addItemToBudget,
+    removeItemFromBudget, setOrcamentoInfo, updateItemCompleto
 } from '../store.js';
 
-// --- Funções Auxiliares de Eventos ---
+// --- Funções Auxiliares ---
 
 function updateModalAutocomplete() {
     if (!itemDescInput || !autocompleteList || !kitSelect) return;
@@ -61,7 +36,6 @@ function updateModalAutocomplete() {
         const filteredByQuery = source.filter(p => p.toUpperCase().includes(upperQuery));
         
         if (selectedKitKey !== 'todos') {
-            // Usa a lista de 'constants.js' (ex: "SUPER CANA")
             return filteredByQuery.filter(p => 
                 calcM2Slats.some(slat => p.toUpperCase().includes(slat))
             );
@@ -88,7 +62,8 @@ async function handleModalAutocompleteClick(productName) {
 }
 
 async function handleInlineAutocompleteClick(productName, targetInput) {
-    const index = targetInput.dataset.index;
+    // Garante que o índice seja um número
+    const index = parseInt(targetInput.dataset.index); 
     const item = getOrcamento().itens[index];
     if (item === undefined) return;
     
@@ -101,12 +76,13 @@ async function handleInlineAutocompleteClick(productName, targetInput) {
         item.vlr = 0;
         item.unid = 'un';
     }
+    // Reseta valores padrão ao mudar o item
     item.alt = 0;
     item.comp = 0;
     item.qtd = 1;
 
     const upperName = productName.toUpperCase();
-    let fieldToFocus = 'qtd'; // Padrão
+    let fieldToFocus = 'qtd'; 
     
     if (calcM2Slats.some(slat => upperName.includes(slat))) {
         fieldToFocus = 'comp';
@@ -120,14 +96,13 @@ async function handleInlineAutocompleteClick(productName, targetInput) {
 }
 
 
-// --- Função Principal de Setup ---
+// --- Setup dos Listeners ---
 
 export function setupBudgetEventListeners() {
 
-    // --- O "OUVINTE" GLOBAL (Fluxo de Dados Unidirecional) ---
+    // --- Ouvinte Global de Estado ---
     document.addEventListener('stateChanged', (e) => {
         const { action, payload } = e.detail;
-        console.log(`Ouvinte Global: Ação = ${action}`, payload);
         switch (action) {
             case 'itemAdded':
                 addNewRow(payload.item, payload.index);
@@ -161,7 +136,7 @@ export function setupBudgetEventListeners() {
         }
     });
 
-    // --- Eventos Iniciais e de Navegação Básica ---
+    // --- Eventos Iniciais ---
     const initBtn = document.getElementById('init-orcamento-btn'); 
     if (initBtn) {
         initBtn.addEventListener('click', () => {
@@ -191,7 +166,7 @@ export function setupBudgetEventListeners() {
     document.getElementById('tipo-serralheiro-btn').addEventListener('click', handleTipoClienteSelect);
     document.getElementById('tipo-cliente-final-btn').addEventListener('click', handleTipoClienteSelect);
 
-    // --- Eventos dos Formulários ---
+    // --- Eventos de Formulários (Modais) ---
     if (clienteFormRef) {
         clienteFormRef.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -257,7 +232,7 @@ export function setupBudgetEventListeners() {
         });
     }
 
-    // --- Eventos dos Botões ---
+    // --- Botões de Edição ---
     document.getElementById('edit-cliente-btn').addEventListener('click', () => {
         const state = getOrcamento();
         for (const key in clienteInputs) {
@@ -296,13 +271,11 @@ export function setupBudgetEventListeners() {
         });
     }
 
-    // --- Eventos do Formulário do Modal ---
     if (itemAltInput) itemAltInput.addEventListener('input', calcularEAtualizarCamposPorta);
     if (itemCompInput) itemCompInput.addEventListener('input', calcularEAtualizarCamposPorta);
     if (incluirRoloCheck) incluirRoloCheck.addEventListener('change', calcularEAtualizarCamposPorta);
     if (clienteInputs.cnpj) clienteInputs.cnpj.addEventListener('input', (e) => formatarCPFCNPJ(e.target));
 
-    // --- Eventos de Totais ---
     if (descontoGeralInput) descontoGeralInput.addEventListener('input', () => recalcularTudo());
     if (freteTipoSelect) {
         freteTipoSelect.addEventListener('change', () => {
@@ -317,8 +290,7 @@ export function setupBudgetEventListeners() {
 
     if (btnAddInlineRow) {
         btnAddInlineRow.addEventListener('click', (e) => { 
-            e.stopPropagation(); // Impede o 'document.click' de fechar a lista
-            
+            e.stopPropagation(); 
             addItemToBudget(
                 { descricao: 'NOVO ITEM - Clique para editar', comp: 0, alt: 0, qtd: 1, unid: 'un', vlr: 0, descPerc: 0 },
                 { focusAndSelect: true }
@@ -328,11 +300,11 @@ export function setupBudgetEventListeners() {
 
 
     if (tableBody) {
-        // Listener para MUDANÇAS (inputs)
+        // --- Listener para MUDANÇAS (inputs) ---
         tableBody.addEventListener('change', (e) => {
             const target = e.target;
             if (target.classList.contains('inline-input') || target.classList.contains('inline-desc')) {
-                const index = target.dataset.index;
+                const index = parseInt(target.dataset.index);
                 const state = getOrcamento();
                 if (!state.itens[index]) return;
 
@@ -359,7 +331,7 @@ export function setupBudgetEventListeners() {
             }
         });
 
-        // Listener para INPUT (filtrar autocomplete)
+        // --- Listener para FILTRAR enquanto digita ---
         tableBody.addEventListener('input', (e) => {
             const input = e.target;
             if (input.classList.contains('inline-desc')) {
@@ -369,46 +341,53 @@ export function setupBudgetEventListeners() {
             }
         });
 
-        // Listener para CLIQUES (remover item E autocomplete)
-        tableBody.addEventListener('click', (e) => {
-            // Delegação para o Autocomplete (clique na LI)
+        // ######################################################
+        // ### CORREÇÃO DEFINITIVA: CLIQUE FANTASMA ###
+        // ######################################################
+        // Usamos 'mousedown' em vez de 'click' para o Autocomplete.
+        // 'mousedown' dispara ANTES do 'blur', permitindo capturar a seleção.
+        tableBody.addEventListener('mousedown', (e) => {
             const li = e.target.closest('.autocomplete-list li');
             if (li && li.dataset.productName) {
-                e.stopPropagation(); // <-- Impede o 'document.click' de fechar a lista
+                // PREVINE o blur do input! Isso é a chave.
+                // Impede que o evento 'change' (com o texto incompleto) dispare.
+                e.preventDefault(); 
+                e.stopPropagation();
+                
                 const productName = li.dataset.productName;
                 const wrapper = e.target.closest('.inline-autocomplete-wrapper');
                 const input = wrapper?.querySelector('.inline-desc');
+                
                 if (input) {
                     handleInlineAutocompleteClick(productName, input);
                 }
-                return;
             }
-            
+        });
+        // ######################################################
+
+        // Listener para CLIQUES GERAIS (Remover Item e Abrir Lista)
+        tableBody.addEventListener('click', (e) => {
             // Delegação para o Botão Remover
             if (e.target.closest('.remove-item')) {
-                e.stopPropagation(); // <-- Impede o 'document.click'
-                const index = e.target.closest('tr').dataset.index;
+                e.stopPropagation(); 
+                const index = parseInt(e.target.closest('tr').dataset.index);
                 removeItemFromBudget(index);
                 return;
             }
 
-            // ######################################################
-            // ### A CORREÇÃO DO BUG "CLIQUE DUPLO" ESTÁ AQUI ###
-            // ######################################################
-            // Delegação para ABRIR/FILTRAR o autocomplete (clique no INPUT)
+            // Delegação para ABRIR o autocomplete ao clicar no INPUT
             const input = e.target;
             if (input.classList.contains('inline-desc')) {
-                e.stopPropagation(); // <-- Impede o 'document.click' de fechar a lista
+                e.stopPropagation(); 
                 const list = input.nextElementSibling;
                 if (!list) return;
                 
-                // CORRIGIDO: Mostra a lista filtrada, igual ao listener 'input'
+                // Abre a lista já filtrada com o que tiver no input
                 populateAutocompleteList(input, list, (source) => {
                     const query = input.value.toUpperCase();
                     return source.filter(p => p.toUpperCase().includes(query));
                 });
             }
-            // ######################################################
         });
         
         // Listener para NAVEGAÇÃO (setas)
@@ -446,11 +425,10 @@ export function setupBudgetEventListeners() {
             }
         });
     }
-    // --- Fim da Edição Inline ---
 
-
-    // --- Autocomplete do Modal ---
+    // --- Listeners Diversos ---
     if (autocompleteList) {
+        // Autocomplete do Modal (mantém click pois não tem edição inline concorrente)
         autocompleteList.addEventListener('click', (e) => {
             const li = e.target.closest('li');
             if (li && li.dataset.productName) {
@@ -471,15 +449,13 @@ export function setupBudgetEventListeners() {
         });
     }
 
-    // --- Listener Global ---
+    // Fecha autocompletes ao clicar fora
     document.addEventListener('click', (e) => {
-        // Este é o 'listener' que fecha os autocompletes.
         if (!e.target.closest('.inline-autocomplete-wrapper') && e.target.id !== 'item-desc' && !e.target.closest('.autocomplete-list')) {
             hideAllAutocompletes();
         }
     });
 
-     // --- Listener para Gerar Pedido ---
      let gerarPedidoBtn = document.getElementById('gerar-pedido-btn');
      if (!gerarPedidoBtn) {
          gerarPedidoBtn = document.createElement('button');

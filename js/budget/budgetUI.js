@@ -1,23 +1,20 @@
 // js/budget/budgetUI.js
 import { getProdutosDB } from '../state.js';
-import { getOrcamento, updateItemCompleto } from '../store.js';
+import { getOrcamento } from '../store.js';
 import { calcM2Slats, needsCompItems, needsAltItems, empresasDB, kitsDB } from '../config/constants.js';
-// Importações de Elementos do DOM (Bloco 100% Corrigido)
+// Importações de Elementos do DOM
 import {
     companyNameDisplay, companyAddressDisplay, empresaSelect, kitSelect, tableBody,
     freteTipoSelect, freteValorRow, freteValorInput, itemAltInput, itemCompInput, 
     incluirRoloCheck, itemQtdInput, itemUnidInput, itemVlrInput, itemDescInput, 
     autocompleteList,
-    // Seletores para renderInfo()
     clienteNomeDisplay, clienteCnpjDisplay, clienteEnderecoDisplay, 
     clienteCidadeUFDisplay, clienteContatoDisplay, emailDisplay, 
     orcamentoDataDisplay,
-    // Seletores para recalcularTudo()
     descontoGeralInput, subtotalDisplay, totalGeralDisplay, printSubtotal, 
     printDesconto, printFreteTipo, printFreteValor, printTotalGeral
 } from '../ui/domElements.js';
 import { formatCurrency, parseCurrency } from '../utils.js';
-import { buscarPrecoProduto } from '../api.js';
 
 // --- Funções de Renderização ---
 
@@ -39,20 +36,28 @@ export function renderInfo(cliente) {
 function createRowHTML(item, index) {
     const totalItem = (item.qtd * item.vlr) * (1 - item.descPerc / 100);
     const upperName = (item.descricao || '').toUpperCase();
+    
     const isCalcM2 = calcM2Slats.some(slat => upperName.includes(slat));
     const needsComp = needsCompItems.some(item => upperName.includes(item));
     const needsAlt = needsAltItems.some(item => upperName.includes(item));
-    const altDisabled = !(isCalcM2 || needsAlt) ? 'disabled' : '';
-    const compDisabled = !(isCalcM2 || needsComp) ? 'disabled' : '';
-    const qtyUnidDisabled = isCalcM2 ? 'disabled' : '';
+
+    // Identifica itens que são vendidos em "kits/rolos fechados"
+    const isFixedItem = [
+        'BORRACHA SOLEIRA 10M', 
+        'PERFIL PVC'
+    ].some(fixed => upperName.includes(fixed));
+
+    // --- LÓGICA DE BLOQUEIO ---
+    const altDisabled = (!(isCalcM2 || needsAlt) || isFixedItem) ? 'disabled' : '';
+    const compDisabled = (!(isCalcM2 || needsComp) || isFixedItem) ? 'disabled' : '';
+    const qtyDisabled = (isCalcM2) ? 'disabled' : ''; 
+    const unidDisabled = (isCalcM2 || isFixedItem) ? 'disabled' : '';
     
     const valorFormatado = item.vlr.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
     
-    // ### CORREÇÃO DE EXIBIÇÃO DE '0' ###
-    // Formata o valor, mas trata '0' como string vazia para campos desabilitados
     const formatNumberInput = (num, field) => {
         const isDisabled = (field === 'comp' && compDisabled) || (field === 'alt' && altDisabled);
-        if (num === 0 && isDisabled) return ''; // Mostra '0' como '' se desabilitado
+        if (num === 0 && isDisabled) return ''; 
         return num.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
     };
     
@@ -60,8 +65,16 @@ function createRowHTML(item, index) {
     const compFormatado = formatNumberInput(item.comp, 'comp');
     const altFormatado = formatNumberInput(item.alt, 'alt');
 
+    // ######################################################
+    // ### CORREÇÃO DEFINITIVA DO BUG DE ID (011, 021...) ###
+    // ######################################################
+    // Usamos Number() para garantir que seja uma soma matemática (0+1=1),
+    // e não uma concatenação de texto ("0"+"1"="01").
+    const displayIndex = String(Number(index) + 1).padStart(3, '0'); 
+    // ######################################################
+
     return `
-        <td>${String(index + 1).padStart(3, '0')}</td>
+        <td>${displayIndex}</td>
         <td>
             <div class="inline-autocomplete-wrapper">
                 <input type="text" class="inline-desc" data-index="${index}" data-field="descricao" value="${item.descricao}" autocomplete="off">
@@ -70,8 +83,8 @@ function createRowHTML(item, index) {
         </td>
         <td><input type="text" class="inline-input" data-field="comp" data-index="${index}" value="${compFormatado}" ${compDisabled}></td>
         <td><input type="text" class="inline-input" data-field="alt" data-index="${index}" value="${altFormatado}" ${altDisabled}></td>
-        <td><input type="text" class="inline-input" data-field="qtd" data-index="${index}" value="${qtdFormatada}" ${qtyUnidDisabled}></td>
-        <td><input type="text" class="inline-input" data-field="unid" data-index="${index}" value="${item.unid}" ${qtyUnidDisabled}></td>
+        <td><input type="text" class="inline-input" data-field="qtd" data-index="${index}" value="${qtdFormatada}" ${qtyDisabled}></td>
+        <td><input type="text" class="inline-input" data-field="unid" data-index="${index}" value="${item.unid}" ${unidDisabled}></td>
         <td><input type="text" class="inline-input" data-field="vlr" data-index="${index}" value="${valorFormatado}"></td>
         <td><input type="number" step="0.1" class="inline-input" data-field="descPerc" data-index="${index}" value="${item.descPerc}"></td>
         <td>${formatCurrency(totalItem)}</td>
@@ -99,40 +112,27 @@ export function addNewRow(item, index) {
     tableBody.appendChild(row);
 }
 
-// ######################################################
-// ### A MUDANÇA ESTÁ AQUI ###
-// ######################################################
-/**
- * "Ferramenta Cirúrgica" - Atualiza UMA linha existente.
- * Agora aceita 'options' para restaurar o foco.
- */
 export function updateTableRow(item, index, options = {}) {
     if (!tableBody) return;
-
     const row = tableBody.querySelector(`tr[data-index="${index}"]`);
+    
     if (!row) {
         console.warn(`Linha ${index} não encontrada para atualizar. Forçando re-render.`);
         renderTable(getOrcamento().itens);
         return;
     }
 
-    // Pega o campo de foco das 'options' enviadas pelo store
     const focusedField = options.focusField; 
-
-    // Atualiza a linha
     row.innerHTML = createRowHTML(item, index);
 
-    // Restaura o foco DENTRO da linha
     if (focusedField) {
         const newTarget = row.querySelector(`[data-field="${focusedField}"]`);
-        if (newTarget) {
+        if (newTarget && !newTarget.disabled) {
             newTarget.focus();
-            newTarget.select(); // Seleciona o conteúdo (ex: '0' ou '1')
+            newTarget.select(); 
         }
     }
 }
-// ######################################################
-
 
 export function recalcularTudo(itens) {
     if (!itens) {
@@ -153,9 +153,7 @@ export function recalcularTudo(itens) {
     if (printTotalGeral) printTotalGeral.textContent = formatCurrency(totalGeral);
 }
 
-// --- Funções de Gerenciamento da UI (Populate, etc.) ---
-// ... (O resto do arquivo é 100% idêntico)
-
+// --- Funções de Gerenciamento da UI ---
 export function popularEmpresasSelect() {
     if (!empresaSelect) return;
     empresaSelect.innerHTML = '';
@@ -194,9 +192,12 @@ export function gerenciarEstadoFormularioItem(productName) {
     const isCalcM2 = calcM2Slats.some(slat => upperName.includes(slat));
     const needsComp = needsCompItems.some(item => upperName.includes(item));
     const needsAlt = needsAltItems.some(item => upperName.includes(item));
+    const isFixedItem = ['BORRACHA SOLEIRA 10M', 'PERFIL PVC'].some(fixed => upperName.includes(fixed));
+
     let altDisabled = true, compDisabled = true, roloDisabled = true;
     let qtdDisabled = false, unidDisabled = false;
     let unidValue = 'un', qtdValue = '1';
+    
     if (isCalcM2) {
         altDisabled = false; compDisabled = false; roloDisabled = false;
         qtdDisabled = true; unidDisabled = true;
@@ -210,13 +211,19 @@ export function gerenciarEstadoFormularioItem(productName) {
         unidDisabled = true;
         unidValue = 'm';
     }
+
+    if (isFixedItem) {
+        altDisabled = true; compDisabled = true; qtdDisabled = false; unidDisabled = true; unidValue = 'un';
+    }
+
     itemAltInput.disabled = altDisabled;
     itemCompInput.disabled = compDisabled;
     incluirRoloCheck.disabled = roloDisabled;
     itemQtdInput.disabled = qtdDisabled;
     itemUnidInput.disabled = unidDisabled;
     itemUnidInput.value = unidValue;
-    itemQtdInput.value = qtdValue;
+    if (!isFixedItem) itemQtdInput.value = qtdValue; 
+    
     if (altDisabled) itemAltInput.value = '';
     if (compDisabled) itemCompInput.value = '';
     if (roloDisabled) incluirRoloCheck.checked = false;
